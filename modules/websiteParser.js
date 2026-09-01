@@ -5,26 +5,15 @@ return {
 
 
 company:
-
-"未知公司",
-
+"未知",
 
 industry:
+"未知",
 
-"未知行业",
-
-
-emails:[
-
-"待发现"
-
-],
-
+emails:[],
 
 description:
-
-"网站信息分析"
-
+"网站分析结果"
 
 
 };
