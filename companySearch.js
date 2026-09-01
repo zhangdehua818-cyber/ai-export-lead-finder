@@ -1,103 +1,68 @@
-
-// V5.2 企业搜索模块
-
-
 export function searchCompanies(product, country){
 
 
-
-const companies=[
-
+return [
 
 {
-
-name:
+company:
 `${country} ${product} Trading GmbH`,
 
-country,
+country:country,
 
-industry:
-`${product} Importer`,
+type:"Importer",
 
-website:
-"待获取",
+website:"待获取",
 
-email:
-"待获取",
+email:"待获取",
 
-score:
-"★★★★★",
-
+score:"★★★★★",
 
 reason:
 "产品匹配，可能存在采购需求"
 
-
 },
 
 
-
 {
-
-name:
+company:
 `Global ${product} Distribution`,
 
-country,
+country:country,
 
-industry:
-"Distributor",
+type:"Distributor",
 
-website:
-"待获取",
+website:"待获取",
 
-email:
-"待获取",
+email:"待获取",
 
-score:
-"★★★★☆",
+score:"★★★★☆",
 
 reason:
 "行业相关，适合作为开发目标"
 
-
 },
 
 
-
 {
-
-name:
+company:
 `European ${product} Supply Co.`,
 
-country,
+country:country,
 
-industry:
-"Wholesaler",
+type:"Wholesaler",
 
-website:
-"待获取",
+website:"待获取",
 
-email:
-"待获取",
+email:"待获取",
 
-score:
-"★★★★☆",
+score:"★★★★☆",
 
 reason:
 "具备渠道合作可能"
 
-
 }
 
-
-
 ];
-
-
-
-
-return companies;
-
 
 
 }
