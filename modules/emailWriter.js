@@ -5,21 +5,21 @@ export function generateEmail(product,country,company){
 return `
 
 Subject:
-${product} Supplier Cooperation Opportunity
+${product} Cooperation Opportunity
 
 
 Dear Purchasing Manager,
 
 
-We are a professional manufacturer from China specializing in ${product}.
+We are a manufacturer from China specializing in ${product}.
 
 
-We are looking for reliable partners in ${country}.
+We are looking for partners in ${country}.
 
 
-Our advantages:
+Advantages:
 
-- Factory direct price
+- Factory price
 
 - Stable supply
 
