@@ -2,9 +2,6 @@ export async function webSearch(keyword){
 
 
 
-// 真实搜索API接口预留
-
-
 return [
 
 
@@ -17,13 +14,13 @@ url:
 "待获取",
 
 description:
-"Potential buyer",
+"海外采购商",
 
 source:
-"Search"
-
+"AI Search"
 
 },
+
 
 
 {
@@ -35,13 +32,13 @@ url:
 "待获取",
 
 description:
-"Distributor",
+"分销商",
 
 source:
-"Search"
-
+"AI Search"
 
 },
+
 
 
 {
@@ -53,11 +50,10 @@ url:
 "待获取",
 
 description:
-"Importer",
+"进口商",
 
 source:
-"Search"
-
+"AI Search"
 
 }
 
