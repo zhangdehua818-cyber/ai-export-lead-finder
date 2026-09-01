@@ -1,22 +1,39 @@
 export async function parseWebsite(url){
 
 
+
 return {
 
 
+website:url,
+
+
 company:
-"未知",
+
+"待分析企业",
+
 
 industry:
-"未知",
 
-emails:[],
+"外贸采购",
 
-description:
-"网站分析结果"
+
+keywords:[
+
+"import",
+
+"buyer",
+
+"distributor"
+
+],
+
+
+emails:[]
 
 
 };
+
 
 
 }
