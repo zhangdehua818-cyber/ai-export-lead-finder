@@ -8,7 +8,7 @@ app.use(express.json());
 
 
 app.get("/",(req,res)=>{
-    res.send("AI Export Lead Finder V3 Running");
+    res.send("AI Export Lead Finder V4 Running");
 });
 
 
@@ -37,123 +37,160 @@ const keywords=[
 
 `${product} distributor ${country}`,
 
-`${product} wholesaler ${country}`
+`${product} wholesaler ${country}`,
+
+`${product} supplier ${country}`
 
 ];
 
 
 
-const analysis=`
+const result={
 
-【市场分析】
 
-产品：
-${product}
+market:`
 
 目标市场：
 ${country}
 
 
-【客户画像】
-
-适合开发：
-
-1. ${product}进口商
-
-2. ${product}批发商
-
-3. 行业经销商
+产品：
+${product}
 
 
-【推荐搜索关键词】
+适合开发客户：
 
-${keywords.join("\n")}
+✓ ${product}进口商
+
+✓ ${product}批发商
+
+✓ ${product}经销商
+
+✓ 行业采购公司
 
 
-【开发策略】
+`,
 
-重点突出：
+
+search:
+
+
+keywords.join("\n"),
+
+
+
+channels:`
+
+推荐开发渠道：
+
+1. Google
+
+2. LinkedIn
+
+3. Europages
+
+4. Kompass
+
+
+`,
+
+
+strategy:`
+
+客户筛选标准：
+
+✓ 有官网
+
+✓ 有采购页面
+
+✓ 有进口需求
+
+✓ 产品匹配
+
+
+开发重点：
 
 ✓ 中国供应链优势
 
 ✓ OEM能力
 
-✓ 产品质量
+✓ 价格优势
 
-✓ 价格竞争力
+✓ 交付能力
 
 
+`,
 
-【英文开发信】
+
+mail:`
 
 Subject:
-Reliable ${product} Supplier From China
+${product} Supplier Cooperation Opportunity
 
 
 Dear Purchasing Manager,
 
 
-We are a professional supplier specializing in ${product}.
+We are a professional manufacturer specializing in ${product}.
+
 
 We are looking for distributors and partners in ${country}.
 
+
 Our advantages:
 
-- Competitive factory price
-- Stable supply
+- Factory direct price
 - OEM service
+- Stable supply
 
 
-Could we discuss possible cooperation?
+Would you like to discuss cooperation?
 
 
 Best regards
 
-`;
+
+`,
 
 
-
-const leads=[
+leads:[
 
 {
-company:`${country} ${product} Trading Company`,
+company:`${country} ${product} Importer`,
 country,
 type:type || "Importer",
-website:"Searching...",
-email:"Contact via website",
+website:"需要进一步搜索",
+email:"待获取",
 score:"★★★★★"
 },
 
-
 {
-company:`Global ${product} Distributor`,
+company:`${country} ${product} Distributor`,
 country,
 type:"Distributor",
-website:"Searching...",
-email:"Contact via website",
+website:"需要进一步搜索",
+email:"待获取",
 score:"★★★★☆"
 }
 
-];
+]
+
+
+};
 
 
 
-res.json({
+res.json(result);
 
-product,
-country,
-analysis,
-leads
+
 
 });
 
-
-});
 
 
 
 app.listen(3000,()=>{
 
-console.log("V3 running");
+console.log("V4 running");
 
 });
