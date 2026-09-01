@@ -1,112 +1,68 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AI Export Lead Finder V2</title>
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>AI Export Lead Finder</title>
+
 
 <style>
 
 body{
 font-family:Arial,"Microsoft YaHei";
 background:#f5f7fb;
-margin:0;
 padding:30px;
 }
 
 
 .container{
-max-width:1000px;
+max-width:900px;
 margin:auto;
-}
-
-
-.header{
-text-align:center;
-margin-bottom:30px;
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 30px #ddd;
 }
 
 
 h1{
 color:#2563eb;
-font-size:38px;
 }
-
-
-.subtitle{
-color:#666;
-font-size:18px;
-}
-
-
-
-.card{
-
-background:white;
-padding:30px;
-border-radius:20px;
-box-shadow:0 10px 30px #ddd;
-margin-bottom:25px;
-
-}
-
-
-
-label{
-
-display:block;
-font-weight:bold;
-margin-top:15px;
-
-}
-
 
 
 input,select{
 
 width:100%;
 padding:15px;
-margin-top:8px;
-border-radius:10px;
+margin:10px 0;
+
 border:1px solid #ddd;
+border-radius:10px;
+
 font-size:16px;
 
 }
 
 
-
 button{
 
-margin-top:25px;
 width:100%;
-padding:16px;
+padding:15px;
+
 background:#2563eb;
+
 color:white;
+
 border:none;
-border-radius:12px;
+
+border-radius:10px;
+
 font-size:18px;
+
 cursor:pointer;
-
-}
-
-
-
-button:hover{
-
-background:#1d4ed8;
-
-}
-
-
-
-.loading{
-
-display:none;
-text-align:center;
-padding:20px;
-font-size:18px;
-color:#2563eb;
 
 }
 
@@ -114,38 +70,35 @@ color:#2563eb;
 
 .result{
 
+margin-top:20px;
+
 background:#f8fafc;
-border-left:5px solid #2563eb;
+
 padding:20px;
-margin-top:15px;
-border-radius:10px;
+
+border-radius:15px;
 
 }
 
 
 
-.tag{
+.item{
 
-display:inline-block;
-background:#dbeafe;
-padding:5px 10px;
-border-radius:20px;
-margin-right:8px;
+background:white;
 
-}
-
-
-.mail{
-
-background:#ecfdf5;
 padding:15px;
-border-radius:10px;
+
 margin-top:15px;
+
+border-left:5px solid #2563eb;
+
+border-radius:10px;
 
 }
 
 
 </style>
+
 
 </head>
 
@@ -156,30 +109,19 @@ margin-top:15px;
 <div class="container">
 
 
-<div class="header">
-
-<h1>AI Export Lead Finder</h1>
-
-<div class="subtitle">
-AI外贸客户开发助手 · 自动寻找海外潜在买家
-</div>
-
-</div>
+<h1>
+AI Export Lead Finder
+</h1>
 
 
-
-<div class="card">
-
-
-<h2>寻找海外客户</h2>
+<p>
+AI外贸客户开发助手
+</p>
 
 
-<label>产品名称</label>
 
-<input id="product" value="CNC Aluminum Parts">
+<input id="product" placeholder="输入产品，例如 CNC加工件">
 
-
-<label>目标国家</label>
 
 <select id="country">
 
@@ -191,7 +133,6 @@ AI外贸客户开发助手 · 自动寻找海外潜在买家
 </select>
 
 
-<label>客户类型</label>
 
 <select id="type">
 
@@ -203,46 +144,24 @@ AI外贸客户开发助手 · 自动寻找海外潜在买家
 
 
 
+
 <button onclick="searchLead()">
+
 开始寻找客户
+
 </button>
 
 
-<div class="loading" id="loading">
 
-AI正在分析海外市场...<br><br>
-
-✓ 产品关键词分析<br>
-✓ 买家类型筛选<br>
-✓ 潜在客户匹配<br>
-✓ 联系方式整理
-
-</div>
-
-
-</div>
-
-
-
-
-<div class="card">
-
-
-<h2>潜在客户</h2>
-
-<div id="results">
+<div id="result" class="result">
 
 等待搜索...
 
 </div>
 
 
-</div>
-
-
 
 </div>
-
 
 
 
@@ -260,20 +179,29 @@ let country=document.getElementById("country").value;
 let type=document.getElementById("type").value;
 
 
-document.getElementById("loading").style.display="block";
+
+document.getElementById("result").innerHTML=
+"AI正在搜索客户...";
 
 
-document.getElementById("results").innerHTML="";
+
+try{
 
 
+let response=await fetch(
 
-let res=await fetch("/search",{
+"https://ai-export-lead-finder.onrender.com/find-leads",
+
+{
 
 method:"POST",
 
 headers:{
+
 "Content-Type":"application/json"
+
 },
+
 
 body:JSON.stringify({
 
@@ -283,78 +211,36 @@ type
 
 })
 
-});
+
+}
+
+);
 
 
-let data=await res.json();
 
-
-document.getElementById("loading").style.display="none";
+let data=await response.json();
 
 
 
 let html="";
 
 
-data.forEach((item,index)=>{
+data.leads.forEach(item=>{
 
 
 html+=`
 
-<div class="result">
+<div class="item">
 
+<h3>${item.company}</h3>
 
-<h3>
-${index+1}. ${item.company}
-</h3>
+<p>国家：${item.country}</p>
 
+<p>类型：${item.type}</p>
 
-<span class="tag">
-${item.country}
-</span>
+<p>邮箱：${item.email}</p>
 
-<span class="tag">
-${item.type}
-</span>
-
-
-<p>
-官网：
-${item.website}
-</p>
-
-
-<p>
-联系人：
-${item.contact}
-</p>
-
-
-<p>
-邮箱：
-${item.email}
-</p>
-
-
-<p>
-匹配原因：
-${item.reason}
-</p>
-
-
-
-<button onclick="createMail('${item.company}')">
-
-生成开发信
-
-</button>
-
-
-<div id="mail-${index}" class="mail" style="display:none">
-
-</div>
-
-
+<p>匹配度：${item.score}</p>
 
 </div>
 
@@ -362,34 +248,31 @@ ${item.reason}
 `;
 
 
-
 });
 
 
-document.getElementById("results").innerHTML=html;
+
+document.getElementById("result").innerHTML=html;
+
+
+
+}catch(e){
+
+
+document.getElementById("result").innerHTML=
+
+"连接失败："+e.message;
 
 
 }
 
 
-
-async function createMail(company){
-
-
-alert(
-
-"正在生成给 "+company+" 的英文开发信..."
-
-);
-
-
 }
-
 
 
 </script>
 
 
-
 </body>
+
 </html>
