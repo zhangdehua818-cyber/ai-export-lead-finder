@@ -2,13 +2,13 @@ export function scoreCompany(company){
 
 
 
-let score=60;
+let score=70;
 
 
 
 if(company.type==="Importer"){
 
-score+=20;
+score+=15;
 
 }
 
@@ -24,7 +24,7 @@ score+=10;
 
 if(company.country){
 
-score+=10;
+score+=5;
 
 }
 
@@ -34,14 +34,18 @@ score+=10;
 let level="★★★☆☆";
 
 
-if(score>=90)
+
+if(score>=90){
 
 level="★★★★★";
 
+}
 
-else if(score>=75)
+else if(score>=80){
 
 level="★★★★☆";
+
+}
 
 
 
@@ -57,11 +61,11 @@ level,
 reason:
 
 `
-产品匹配：
-高
-
 客户类型：
 ${company.type}
+
+匹配度：
+较高
 
 建议：
 优先开发
