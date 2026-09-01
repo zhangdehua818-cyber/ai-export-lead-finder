@@ -7,20 +7,20 @@
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>AI外贸客户开发助手 V6</title>
+<title>AI外贸客户开发助手 V8 商业版</title>
 
 
 <style>
 
 body{
-font-family:Arial,"Microsoft YaHei";
-background:#f5f7fb;
+font-family:"Microsoft YaHei",Arial;
+background:#f4f7fb;
 padding:30px;
 }
 
 
 .container{
-max-width:1000px;
+max-width:1100px;
 margin:auto;
 }
 
@@ -31,15 +31,15 @@ background:white;
 padding:25px;
 border-radius:20px;
 margin-bottom:20px;
-box-shadow:0 8px 25px #ddd;
+box-shadow:0 5px 20px #ddd;
 
 }
 
 
 h1{
 
-color:#2563eb;
 text-align:center;
+color:#2563eb;
 
 }
 
@@ -48,62 +48,65 @@ input,select{
 
 width:100%;
 padding:14px;
-margin-top:10px;
+margin:8px 0;
+
 border-radius:10px;
 border:1px solid #ddd;
 
-}
+font-size:16px;
 
+}
 
 
 button{
 
+padding:14px;
 width:100%;
-padding:15px;
-
-margin-top:15px;
-
 background:#2563eb;
-
 color:white;
-
 border:0;
-
 border-radius:10px;
-
-font-size:18px;
+font-size:17px;
+cursor:pointer;
 
 }
-
 
 
 .box{
 
 background:#f8fafc;
-
 padding:20px;
-
 border-radius:15px;
-
 white-space:pre-line;
-
-margin-top:10px;
 
 }
 
 
-
 .customer{
 
-background:white;
-
 border-left:5px solid #2563eb;
+
+background:#fff;
 
 padding:20px;
 
 margin-top:15px;
 
-border-radius:10px;
+border-radius:12px;
+
+}
+
+
+
+.tag{
+
+display:inline-block;
+
+padding:5px 10px;
+
+background:#e0edff;
+
+border-radius:8px;
 
 }
 
@@ -128,18 +131,18 @@ border-radius:10px;
 
 
 <h1>
-🌎 AI外贸客户开发助手 V6
+🌎 AI外贸客户开发助手 V8 商业版
 </h1>
 
 
 <p style="text-align:center">
-AI寻找海外采购商
+AI寻找海外采购商 · 自动开发客户
 </p>
 
 
 
 <input id="product"
-placeholder="例如：CNC加工件">
+placeholder="输入产品，例如：五金工具">
 
 
 <select id="country">
@@ -150,7 +153,7 @@ placeholder="例如：CNC加工件">
 
 <option>UK</option>
 
-<option>Canada</option>
+<option>France</option>
 
 </select>
 
@@ -170,7 +173,7 @@ placeholder="例如：CNC加工件">
 
 <button onclick="searchLead()">
 
-开始寻找客户
+🚀 开始寻找客户
 
 </button>
 
@@ -180,10 +183,12 @@ placeholder="例如：CNC加工件">
 
 
 
+
 <div class="card">
 
-
-<h2>📊 产品分析</h2>
+<h2>
+📊 产品分析
+</h2>
 
 <div id="analysis" class="box">
 等待分析...
@@ -191,27 +196,25 @@ placeholder="例如：CNC加工件">
 
 
 
-<h2>🔎 搜索关键词</h2>
+<h2>
+🔎 搜索关键词
+</h2>
 
 <div id="keywords" class="box"></div>
 
 
-
-<h2>🌍 开发渠道</h2>
+<h2>
+🌍 开发渠道
+</h2>
 
 <div id="channels" class="box"></div>
 
 
-
-<h2>🎯 筛选策略</h2>
+<h2>
+🎯 客户筛选策略
+</h2>
 
 <div id="strategy" class="box"></div>
-
-
-
-<h2>✉️ AI开发信</h2>
-
-<div id="email" class="box"></div>
 
 
 </div>
@@ -224,8 +227,15 @@ placeholder="例如：CNC加工件">
 
 
 <h2>
-🏢 潜在客户
+🏢 潜在客户列表
 </h2>
+
+
+<button onclick="downloadExcel()">
+
+📥 导出客户名单
+
+</button>
 
 
 <div id="customers">
@@ -235,7 +245,29 @@ placeholder="例如：CNC加工件">
 </div>
 
 
+
 </div>
+
+
+
+
+
+<div class="card">
+
+<h2>
+✉️ AI开发信
+</h2>
+
+<div id="email" class="box">
+
+等待生成...
+
+</div>
+
+
+</div>
+
+
 
 
 
@@ -249,23 +281,29 @@ placeholder="例如：CNC加工件">
 <script>
 
 
+
+let excelData="";
+
+
+
 async function searchLead(){
 
 
-const product =
+
+let product =
 document.getElementById("product").value;
 
 
-const country =
+let country =
 document.getElementById("country").value;
 
 
-const type =
+let type =
 document.getElementById("type").value;
 
 
 
-const response =
+let res =
 await fetch(
 
 "https://ai-export-lead-finder.onrender.com/find-leads",
@@ -296,33 +334,50 @@ type
 
 
 
-const data =
-await response.json();
+let data =
+await res.json();
+
 
 
 
 document.getElementById("analysis").innerText =
-data.analysis;
+
+JSON.stringify(
+data.productInfo,
+null,
+2
+);
 
 
 
 document.getElementById("keywords").innerText =
-data.keywords.join("\n");
+
+data.productInfo.keywords.join("\n");
 
 
 
 document.getElementById("channels").innerText =
-data.channels;
+
+"Google\nLinkedIn\nB2B目录\n行业网站";
 
 
 
 document.getElementById("strategy").innerText =
-data.strategy;
+
+"筛选标准：\n✓ 产品匹配\n✓ 有采购能力\n✓ 有渠道价值";
+
 
 
 
 document.getElementById("email").innerText =
-data.email;
+
+data.customers[0]?.emailTemplate || "";
+
+
+
+
+excelData =
+data.excel;
 
 
 
@@ -336,50 +391,89 @@ data.customers.forEach(c=>{
 
 html += `
 
+
 <div class="customer">
 
 
-<h3>${c.company}</h3>
+<h3>
+
+${c.company}
+
+</h3>
+
 
 
 <p>
+
 国家：
 ${c.country}
+
 </p>
 
 
 <p>
+
 类型：
+
+<span class="tag">
 ${c.type}
+</span>
+
 </p>
 
 
-<p>
-官网：
-${c.website}
-</p>
-
 
 <p>
-邮箱：
-${c.email}
-</p>
 
-
-<p>
 评分：
+
 ${c.score}
+
+</p>
+
+
+
+<p>
+
+官网：
+
+${c.website}
+
+</p>
+
+
+
+<p>
+
+邮箱：
+
+${c.email}
+
+</p>
+
+
+
+<p>
+
+原因：
+
+${c.reason}
+
 </p>
 
 
 <p>
-原因：
-${c.reason}
+
+状态：
+
+${c.status}
+
 </p>
 
 
 
 </div>
+
 
 `;
 
@@ -389,12 +483,63 @@ ${c.reason}
 
 
 
-document.getElementById("customers").innerHTML =
-html;
+document.getElementById("customers").innerHTML = html;
 
 
 
 }
+
+
+
+
+
+function downloadExcel(){
+
+
+
+if(!excelData){
+
+alert("请先搜索客户");
+
+return;
+
+}
+
+
+
+let blob =
+new Blob(
+
+[excelData],
+
+{
+type:"text/csv;charset=utf-8;"
+}
+
+);
+
+
+
+let url =
+URL.createObjectURL(blob);
+
+
+
+let a =
+document.createElement("a");
+
+
+a.href=url;
+
+a.download="AI外贸客户名单.csv";
+
+
+a.click();
+
+
+
+}
+
 
 
 </script>
