@@ -1,8 +1,249 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>AI Export Lead Finder</title></head>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Export Lead Finder</title>
+
+<style>
+
+body{
+    font-family:Arial,"Microsoft YaHei";
+    background:#f5f7fb;
+    margin:0;
+    padding:30px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:35px;
+    border-radius:20px;
+    box-shadow:0 10px 30px #ddd;
+}
+
+
+h1{
+    color:#1677ff;
+    text-align:center;
+}
+
+
+.desc{
+    text-align:center;
+    color:#666;
+}
+
+
+.box{
+    margin-top:30px;
+    padding:20px;
+    background:#f8f9fa;
+    border-radius:15px;
+}
+
+
+input,select{
+
+width:100%;
+padding:15px;
+margin-top:15px;
+border:1px solid #ddd;
+border-radius:10px;
+font-size:16px;
+
+}
+
+
+button{
+
+width:100%;
+margin-top:20px;
+padding:15px;
+
+background:#1677ff;
+color:white;
+
+border:none;
+border-radius:10px;
+
+font-size:18px;
+
+cursor:pointer;
+
+}
+
+
+button:hover{
+
+background:#0958d9;
+
+}
+
+
+.result{
+
+margin-top:30px;
+
+padding:20px;
+
+background:#eef6ff;
+
+border-radius:15px;
+
+display:none;
+
+}
+
+
+.card{
+
+background:white;
+
+padding:15px;
+
+margin-top:15px;
+
+border-radius:10px;
+
+border-left:5px solid #1677ff;
+
+}
+
+
+</style>
+
+
+</head>
+
+
 <body>
-<h1>AI 外贸客户开发助手</h1>
-<p>产品关键词 → 海外客户开发方向</p>
+
+
+<div class="container">
+
+
+<h1>
+AI Export Lead Finder
+</h1>
+
+
+<p class="desc">
+AI外贸客户开发助手 · 自动寻找海外潜在客户
+</p>
+
+
+
+<div class="box">
+
+
+<h3>
+输入产品信息
+</h3>
+
+
+<input id="product"
+placeholder="例如：solar panel / power bank / sportswear">
+
+
+<select id="country">
+
+<option>
+目标国家
+</option>
+
+<option>USA</option>
+<option>UK</option>
+<option>Germany</option>
+<option>Canada</option>
+<option>Australia</option>
+
+</select>
+
+
+<button onclick="findLead()">
+开始寻找客户
+</button>
+
+
+</div>
+
+
+
+
+<div id="result" class="result">
+
+
+<h3>
+潜在客户
+</h3>
+
+
+<div class="card">
+
+公司:
+SolarTech Inc
+
+国家:
+USA
+
+类型:
+进口商
+
+联系方式:
+sales@solartech.com
+
+</div>
+
+
+
+<div class="card">
+
+公司:
+Global Energy Ltd
+
+国家:
+Germany
+
+类型:
+分销商
+
+联系方式:
+contact@globalenergy.com
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+<script>
+
+
+function findLead(){
+
+
+let result=document.getElementById("result");
+
+
+result.style.display="block";
+
+
+}
+
+
+</script>
+
+
 </body>
+
+
 </html>
