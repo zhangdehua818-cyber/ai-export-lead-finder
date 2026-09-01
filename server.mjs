@@ -2,6 +2,29 @@ import express from "express";
 import cors from "cors";
 
 
+import { analyzeProduct } 
+from "./modules/productAI.js";
+
+import { searchCompanies } 
+from "./companySearch.js";
+
+import { scoreCompany } 
+from "./modules/scoring.js";
+
+import { findContact } 
+from "./modules/emailFinder.js";
+
+import { generateEmail } 
+from "./modules/emailWriter.js";
+
+import { addCustomer } 
+from "./modules/crm.js";
+
+import { exportLeads } 
+from "./modules/exportExcel.js";
+
+
+
 const app = express();
 
 
@@ -13,7 +36,9 @@ app.use(express.json());
 
 app.get("/",(req,res)=>{
 
-res.send("AI Export Lead Finder V6 Running");
+res.send(
+"AI Export Lead Finder V8 Running"
+);
 
 });
 
@@ -25,7 +50,7 @@ res.json({
 
 status:"ok",
 
-version:"V6"
+version:"V8"
 
 });
 
@@ -34,7 +59,6 @@ version:"V6"
 
 
 
-// V6核心接口
 
 app.post("/find-leads",(req,res)=>{
 
@@ -51,225 +75,162 @@ type
 
 
 
-// 产品分析
+// 1 产品分析
 
-const productAnalysis = `
+const productInfo =
 
-📊 产品分析
+analyzeProduct(
 
+product,
 
-产品：
+country
 
-${product}
+);
 
 
-目标市场：
 
-${country}
 
+// 2 企业搜索
 
-推荐客户类型：
+let companies =
 
-✓ ${product}进口商
+searchCompanies(
 
-✓ ${product}分销商
+product,
 
-✓ ${product}批发商
+country
 
+);
 
-`;
 
 
 
 
-// 搜索关键词
+// 3 客户增强
 
-const keywords=[
+companies = companies.map(company=>{
 
-`${product} importer ${country}`,
 
-`${product} distributor ${country}`,
 
-`${product} wholesaler ${country}`,
+const score =
 
-`${product} buyer ${country}`
+scoreCompany(company);
 
-];
 
 
+const contact =
 
+findContact(
 
-// 模拟企业数据
+company.company,
 
-const customers=[
+country
 
+);
 
-{
 
-company:
-`${country} ${product} Trading GmbH`,
 
-country,
+const email =
 
-type:"Importer",
-
-website:"待获取",
-
-email:"待获取",
-
-score:"★★★★★",
-
-reason:
-"产品匹配度高，可能存在采购需求"
-
-
-},
-
-
-{
-
-company:
-`Global ${product} Distribution`,
-
-country,
-
-type:"Distributor",
-
-website:"待获取",
-
-email:"待获取",
-
-score:"★★★★☆",
-
-reason:
-"行业相关，适合作为潜在客户"
-
-
-},
-
-
-{
-
-company:
-`European ${product} Supply Co.`,
-
-country,
-
-type:"Wholesaler",
-
-website:"待获取",
-
-email:"待获取",
-
-score:"★★★★☆",
-
-reason:
-"具有渠道合作可能"
-
-
-}
-
-
-];
-
-
-
-
-// 开发信
-
-const email = `
-
-Subject:
-${product} Supplier Cooperation Opportunity
-
-
-Dear Purchasing Manager,
-
-
-We are a professional manufacturer specializing in ${product} from China.
-
-
-Our advantages:
-
-✓ Factory direct price
-
-✓ OEM service
-
-✓ Stable supply
-
-
-We are looking for reliable partners in ${country}.
-
-
-Looking forward to cooperation.
-
-
-Best regards
-
-
-`;
-
-
-
-
-// 返回
-
-res.json({
-
-
-version:"V6",
-
+generateEmail(
 
 product,
 
 country,
 
+company.company
 
-analysis:productAnalysis,
-
-
-keywords,
+);
 
 
-channels:
 
-`
-
-Google
-
-LinkedIn
-
-Europages
-
-Industry Directory
-
-`,
+const customer = {
 
 
-strategy:
+...company,
 
-`
 
-筛选标准：
+...contact,
 
-✓ 官网企业
 
-✓ 有采购能力
+score:
 
-✓ 产品匹配
+score.level,
 
-✓ 有渠道价值
 
-`,
+scoreNumber:
 
+score.score,
+
+
+reason:
+
+score.reason,
+
+
+emailTemplate:
 
 email,
 
 
-customers
+status:
+
+"未联系"
+
+
+
+};
+
+
+
+// 保存CRM
+
+addCustomer(customer);
+
+
+
+return customer;
+
 
 
 });
+
+
+
+
+
+// Excel数据
+
+const excel =
+
+exportLeads(
+
+companies
+
+);
+
+
+
+
+
+res.json({
+
+
+version:"V8",
+
+
+productInfo,
+
+
+customers:companies,
+
+
+excel
+
+
+
+});
+
 
 
 });
@@ -283,7 +244,7 @@ app.listen(3000,()=>{
 
 console.log(
 
-"AI Export Lead Finder V6 Running"
+"AI Export Lead Finder V8 Running"
 
 );
 
