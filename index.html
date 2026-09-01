@@ -4,9 +4,11 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>AI外贸客户开发助手 V5.2</title>
+<title>AI外贸客户开发助手 V6</title>
+
 
 <style>
 
@@ -16,103 +18,154 @@ background:#f5f7fb;
 padding:30px;
 }
 
+
 .container{
 max-width:1000px;
 margin:auto;
 }
 
+
 .card{
+
 background:white;
 padding:25px;
 border-radius:20px;
 margin-bottom:20px;
 box-shadow:0 8px 25px #ddd;
+
 }
+
 
 h1{
+
 color:#2563eb;
 text-align:center;
+
 }
 
+
 input,select{
+
 width:100%;
 padding:14px;
 margin-top:10px;
 border-radius:10px;
 border:1px solid #ddd;
-font-size:16px;
+
 }
+
+
 
 button{
+
 width:100%;
 padding:15px;
+
 margin-top:15px;
+
 background:#2563eb;
+
 color:white;
+
 border:0;
+
 border-radius:10px;
+
 font-size:18px;
-cursor:pointer;
+
 }
+
+
 
 .box{
+
 background:#f8fafc;
+
 padding:20px;
+
 border-radius:15px;
+
 white-space:pre-line;
+
 margin-top:10px;
+
 }
 
+
+
 .customer{
-padding:20px;
+
 background:white;
+
 border-left:5px solid #2563eb;
+
+padding:20px;
+
 margin-top:15px;
+
 border-radius:10px;
+
 }
+
+
 
 </style>
 
+
 </head>
+
 
 
 <body>
 
 
+
 <div class="container">
+
 
 
 <div class="card">
 
+
 <h1>
-🌎 AI外贸客户开发助手 V5.2
+🌎 AI外贸客户开发助手 V6
 </h1>
+
 
 <p style="text-align:center">
 AI寻找海外采购商
 </p>
 
 
-<input id="product" placeholder="输入产品，例如：CNC加工件">
+
+<input id="product"
+placeholder="例如：CNC加工件">
 
 
 <select id="country">
 
 <option>Germany</option>
+
 <option>USA</option>
+
 <option>UK</option>
+
 <option>Canada</option>
 
 </select>
 
 
+
 <select id="type">
 
-<option>进口商</option>
-<option>经销商</option>
-<option>批发商</option>
+<option>Importer</option>
+
+<option>Distributor</option>
+
+<option>Wholesaler</option>
 
 </select>
+
 
 
 <button onclick="searchLead()">
@@ -126,50 +179,56 @@ AI寻找海外采购商
 
 
 
+
 <div class="card">
 
-<h2>📊 市场分析</h2>
 
-<div id="market" class="box">
+<h2>📊 产品分析</h2>
+
+<div id="analysis" class="box">
 等待分析...
 </div>
 
 
+
 <h2>🔎 搜索关键词</h2>
 
-<div id="keywords" class="box">
-</div>
+<div id="keywords" class="box"></div>
+
 
 
 <h2>🌍 开发渠道</h2>
 
-<div id="channels" class="box">
-</div>
+<div id="channels" class="box"></div>
 
 
-<h2>🎯 客户策略</h2>
 
-<div id="strategy" class="box">
-</div>
+<h2>🎯 筛选策略</h2>
+
+<div id="strategy" class="box"></div>
+
 
 
 <h2>✉️ AI开发信</h2>
 
-<div id="mail" class="box">
-</div>
+<div id="email" class="box"></div>
 
 
 </div>
+
 
 
 
 
 <div class="card">
 
-<h2>🏢 潜在客户</h2>
+
+<h2>
+🏢 潜在客户
+</h2>
 
 
-<div id="leads">
+<div id="customers">
 
 等待搜索...
 
@@ -184,26 +243,30 @@ AI寻找海外采购商
 
 
 
+
+
+
 <script>
 
 
 async function searchLead(){
 
 
-let product =
+const product =
 document.getElementById("product").value;
 
 
-let country =
+const country =
 document.getElementById("country").value;
 
 
-let type =
+const type =
 document.getElementById("type").value;
 
 
 
-let res = await fetch(
+const response =
+await fetch(
 
 "https://ai-export-lead-finder.onrender.com/find-leads",
 
@@ -233,27 +296,34 @@ type
 
 
 
-let data = await res.json();
+const data =
+await response.json();
 
 
 
-document.getElementById("market").innerText=data.market;
+document.getElementById("analysis").innerText =
+data.analysis;
 
 
-document.getElementById("keywords").innerText=
+
+document.getElementById("keywords").innerText =
 data.keywords.join("\n");
 
 
-document.getElementById("channels").innerText=
+
+document.getElementById("channels").innerText =
 data.channels;
 
 
-document.getElementById("strategy").innerText=
+
+document.getElementById("strategy").innerText =
 data.strategy;
 
 
-document.getElementById("mail").innerText=
-data.mail;
+
+document.getElementById("email").innerText =
+data.email;
+
 
 
 
@@ -261,49 +331,52 @@ let html="";
 
 
 
-data.leads.forEach(item=>{
+data.customers.forEach(c=>{
 
 
-html+=`
+html += `
 
 <div class="customer">
 
-<h3>${item.company}</h3>
+
+<h3>${c.company}</h3>
+
 
 <p>
 国家：
-${item.country}
+${c.country}
 </p>
 
 
 <p>
 类型：
-${item.type}
+${c.type}
 </p>
 
 
 <p>
 官网：
-${item.website}
+${c.website}
 </p>
 
 
 <p>
 邮箱：
-${item.email}
+${c.email}
 </p>
 
 
 <p>
-匹配度：
-${item.score}
+评分：
+${c.score}
 </p>
 
 
 <p>
 原因：
-${item.reason || ""}
+${c.reason}
 </p>
+
 
 
 </div>
@@ -316,7 +389,8 @@ ${item.reason || ""}
 
 
 
-document.getElementById("leads").innerHTML=html;
+document.getElementById("customers").innerHTML =
+html;
 
 
 
@@ -324,6 +398,7 @@ document.getElementById("leads").innerHTML=html;
 
 
 </script>
+
 
 
 </body>
