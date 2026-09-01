@@ -1,7 +1,6 @@
-import { webSearch }
+import {webSearch}
 
 from "./modules/searchAPI.js";
-
 
 
 
@@ -22,7 +21,7 @@ await webSearch(keyword);
 
 
 
-return results.map((item,index)=>{
+return results.map(item=>{
 
 
 return {
@@ -38,15 +37,7 @@ country,
 
 type:
 
-index===0
-
-?
-
-"Importer"
-
-:
-
-"Distributor",
+"Importer",
 
 
 
@@ -55,18 +46,15 @@ website:
 item.url,
 
 
-email:
 
-"待获取",
+description:
 
+item.snippet,
 
 
 source:
 
-item.source,
-
-
-keyword
+item.source
 
 
 
