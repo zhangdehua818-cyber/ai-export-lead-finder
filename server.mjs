@@ -1,22 +1,37 @@
 import express from "express";
 import cors from "cors";
 
+import { generateSearch } from "./search.js";
+
+
 const app = express();
 
+
 app.use(cors());
+
 app.use(express.json());
 
 
+
 app.get("/",(req,res)=>{
-    res.send("AI Export Lead Finder V4 Running");
+
+res.send("AI Export Lead Finder V5.1 Running");
+
 });
+
 
 
 app.get("/health",(req,res)=>{
-    res.json({
-        status:"ok"
-    });
+
+res.json({
+
+status:"ok"
+
 });
+
+});
+
+
 
 
 
@@ -24,41 +39,51 @@ app.post("/find-leads",(req,res)=>{
 
 
 const {
+
 product,
+
 country,
+
 type
+
 }=req.body;
 
 
 
-const keywords=[
 
-`${product} importer ${country}`,
+// 调用搜索模块
 
-`${product} distributor ${country}`,
+const searchData = generateSearch(
 
-`${product} wholesaler ${country}`,
+product,
 
-`${product} supplier ${country}`
+country,
 
-];
+type
 
-
-
-const result={
+);
 
 
-market:`
 
-目标市场：
-${country}
+
+
+const market = `
+
+📊 市场分析
 
 
 产品：
+
 ${product}
 
 
-适合开发客户：
+目标国家：
+
+${country}
+
+
+
+推荐客户：
 
 ✓ ${product}进口商
 
@@ -66,66 +91,80 @@ ${product}
 
 ✓ ${product}经销商
 
-✓ 行业采购公司
 
 
-`,
-
-
-search:
-
-
-keywords.join("\n"),
+`;
 
 
 
-channels:`
-
-推荐开发渠道：
-
-1. Google
-
-2. LinkedIn
-
-3. Europages
-
-4. Kompass
 
 
-`,
+
+const strategy = `
+
+🎯 客户筛选策略
 
 
-strategy:`
+优先寻找：
 
-客户筛选标准：
+1. 有采购页面的网站
 
-✓ 有官网
+2. 有进口业务的企业
 
-✓ 有采购页面
-
-✓ 有进口需求
-
-✓ 产品匹配
+3. 同行业分销商
 
 
 开发重点：
 
-✓ 中国供应链优势
+✓ 中国供应链
 
 ✓ OEM能力
 
 ✓ 价格优势
 
-✓ 交付能力
+✓ 稳定交付
 
 
-`,
+
+`;
 
 
-mail:`
+
+
+
+const channels = `
+
+🌍 推荐开发渠道
+
+
+Google
+
+LinkedIn
+
+Europages
+
+Kompass
+
+行业协会网站
+
+
+
+`;
+
+
+
+
+
+
+const mail = `
+
+✉️ AI开发信
+
 
 Subject:
+
 ${product} Supplier Cooperation Opportunity
+
 
 
 Dear Purchasing Manager,
@@ -134,53 +173,84 @@ Dear Purchasing Manager,
 We are a professional manufacturer specializing in ${product}.
 
 
-We are looking for distributors and partners in ${country}.
-
-
-Our advantages:
+We provide:
 
 - Factory direct price
+
 - OEM service
+
 - Stable supply
 
 
-Would you like to discuss cooperation?
+We are looking for partners in ${country}.
+
+
+Looking forward to cooperation.
+
 
 
 Best regards
 
 
-`,
+
+`;
 
 
-leads:[
 
-{
-company:`${country} ${product} Importer`,
-country,
-type:type || "Importer",
-website:"需要进一步搜索",
+
+
+
+const leads = searchData.targets.map(item=>{
+
+
+return {
+
+company:item.company,
+
+country:item.country,
+
+type:item.type,
+
+website:item.website,
+
 email:"待获取",
-score:"★★★★★"
-},
 
-{
-company:`${country} ${product} Distributor`,
-country,
-type:"Distributor",
-website:"需要进一步搜索",
-email:"待获取",
-score:"★★★★☆"
-}
-
-]
+score:item.score
 
 
 };
 
 
+});
 
-res.json(result);
+
+
+
+
+res.json({
+
+
+product,
+
+country,
+
+
+market,
+
+
+keywords:searchData.keywords,
+
+
+channels,
+
+
+strategy,
+
+
+mail,
+
+
+leads
 
 
 
@@ -189,8 +259,21 @@ res.json(result);
 
 
 
+});
+
+
+
+
+
+
 app.listen(3000,()=>{
 
-console.log("V4 running");
+
+console.log(
+
+"AI Export Lead Finder V5.1 running"
+
+);
+
 
 });
