@@ -33,3 +33,31 @@ return customers;
 
 
 }
+
+
+
+export function updateCustomer(id,status){
+
+
+customers =
+customers.map(c=>{
+
+
+if(c.id===id){
+
+c.status=status;
+
+}
+
+
+return c;
+
+
+});
+
+
+
+return customers;
+
+
+}
