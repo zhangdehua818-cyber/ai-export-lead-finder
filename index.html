@@ -8,31 +8,82 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>
-AI外贸客户开发助手 Ultimate
+AI外贸客户开发助手 V3.0
 </title>
 
 
 <style>
 
+*{
+
+box-sizing:border-box;
+
+}
+
+
+
 body{
 
-font-family:
-Microsoft YaHei,Arial;
+margin:0;
 
-background:#f5f7fb;
+font-family:
+
+"Microsoft YaHei",Arial;
+
+background:#f4f7fb;
+
+color:#1f2937;
+
+}
+
+
+
+.container{
+
+max-width:1200px;
+
+margin:auto;
 
 padding:30px;
 
 }
 
 
-.container{
 
-max-width:1100px;
+.header{
 
-margin:auto;
+background:white;
+
+padding:25px;
+
+border-radius:20px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+
+margin-bottom:20px;
 
 }
+
+
+
+h1{
+
+color:#2563eb;
+
+text-align:center;
+
+}
+
+
+
+.subtitle{
+
+text-align:center;
+
+color:#666;
+
+}
+
 
 
 .card{
@@ -45,17 +96,7 @@ border-radius:20px;
 
 margin-bottom:20px;
 
-box-shadow:0 5px 20px #ddd;
-
-}
-
-
-
-h1{
-
-text-align:center;
-
-color:#2563eb;
+box-shadow:0 5px 20px rgba(0,0,0,.08);
 
 }
 
@@ -67,11 +108,13 @@ width:100%;
 
 padding:14px;
 
-margin:10px 0;
+margin:8px 0;
+
+border:1px solid #ddd;
 
 border-radius:10px;
 
-border:1px solid #ddd;
+font-size:16px;
 
 }
 
@@ -81,17 +124,63 @@ button{
 
 width:100%;
 
-padding:15px;
+padding:14px;
+
+border:none;
+
+border-radius:10px;
 
 background:#2563eb;
 
 color:white;
 
-border:0;
+font-size:16px;
 
-border-radius:10px;
+cursor:pointer;
 
-font-size:18px;
+margin-top:10px;
+
+}
+
+
+
+button:hover{
+
+opacity:.9;
+
+}
+
+
+
+.vip-box{
+
+display:flex;
+
+gap:15px;
+
+}
+
+
+
+.vip{
+
+flex:1;
+
+padding:20px;
+
+border-radius:15px;
+
+background:#f8fafc;
+
+text-align:center;
+
+}
+
+
+
+.vip h3{
+
+color:#2563eb;
 
 }
 
@@ -105,11 +194,12 @@ padding:20px;
 
 margin-top:15px;
 
-border-radius:12px;
+border-radius:15px;
 
 border-left:5px solid #2563eb;
 
 }
+
 
 
 .score{
@@ -121,23 +211,72 @@ color:#2563eb;
 }
 
 
-.box{
 
-white-space:pre-line;
+.hidden{
 
-background:#f8fafc;
-
-padding:20px;
-
-border-radius:15px;
+display:none;
 
 }
 
 
 
-.download{
+.flex{
+
+display:flex;
+
+gap:20px;
+
+}
+
+
+
+.flex > div{
+
+flex:1;
+
+}
+
+
+
+.info{
+
+background:#eff6ff;
+
+padding:15px;
+
+border-radius:12px;
+
+}
+
+
+
+.green{
 
 background:#16a34a;
+
+}
+
+
+
+.red{
+
+background:#dc2626;
+
+}
+
+
+
+textarea{
+
+width:100%;
+
+height:200px;
+
+padding:15px;
+
+border-radius:10px;
+
+border:1px solid #ddd;
 
 }
 
@@ -154,27 +293,556 @@ background:#16a34a;
 <div class="container">
 
 
-<div class="card">
+<div class="header">
 
 
 <h1>
+🌎 AI外贸客户开发助手 V3.0
+</h1>
 
-🌎 AI外贸客户开发助手
+
+<p class="subtitle">
+
+AI寻找海外采购商 · 自动分析 · 自动开发
+
+</p>
+
+
+</div>
+
+
+
+<!-- 登录注册 -->
+
+
+<div class="card">
+
+
+<h2>
+用户中心
+</h2>
+
+
+<div id="loginArea">
+
+
+<input
+
+id="email"
+
+placeholder="邮箱"
+
+>
+
+
+<input
+
+id="password"
+
+type="password"
+
+placeholder="密码"
+
+>
+
+
+<div class="flex">
+
+
+<div>
+
+<button onclick="register()">
+
+注册
+
+</button>
+
+</div>
+
+
+<div>
+
+<button onclick="login()">
+
+登录
+
+</button>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<div id="userArea" class="hidden">
+
+
+<div class="info">
+
+
+账号：
+
+<span id="userEmail"></span>
+
 
 <br>
 
-Ultimate V1.0
 
-</h1>
+会员：
 
+<span id="userVip"></span>
+
+
+<br>
+
+
+Token状态：
+
+已登录
+
+
+</div>
+
+
+<button onclick="logout()">
+
+退出登录
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- 会员 -->
+
+
+<div class="card">
+
+
+<h2>
+
+会员套餐
+
+</h2>
+
+
+<div class="vip-box">
+
+
+<div class="vip">
+
+<h3>
+
+免费版
+
+</h3>
+
+
+<p>
+
+每日3次搜索
+
+</p>
+
+</div>
+
+
+
+<div class="vip">
+
+<h3>
+
+专业版
+
+</h3>
+
+
+<p>
+
+¥99/月
+
+</p>
+
+
+<p>
+
+100次搜索
+
+</p>
+
+</div>
+
+
+
+<div class="vip">
+
+<h3>
+
+企业版
+
+</h3>
+
+
+<p>
+
+¥299/月
+
+</p>
+
+
+<p>
+
+团队使用
+
+</p>
+
+</div>
+
+
+
+</div>
+
+
+</div>
+</div>
+
+<script>
+
+let token = localStorage.getItem("token") || "";
+
+let csvData = "";
+
+const API =
+"https://ai-export-lead-finder.onrender.com";
+
+
+
+// 页面加载检查登录
+
+window.onload=function(){
+
+if(token){
+
+showUser();
+
+}
+
+}
+
+
+
+
+// 注册
+
+async function register(){
+
+
+let email =
+document.getElementById("email").value;
+
+
+let password =
+document.getElementById("password").value;
+
+
+
+let res = await fetch(
+
+API+"/register",
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+email,
+
+password
+
+})
+
+}
+
+);
+
+
+
+let data = await res.json();
+
+
+
+if(data.success){
+
+alert(
+
+"注册成功，请登录"
+
+);
+
+}else{
+
+
+alert(
+
+data.message || "注册失败"
+
+);
+
+
+}
+
+
+}
+
+
+
+
+
+// 登录
+
+async function login(){
+
+
+let email =
+document.getElementById("email").value;
+
+
+let password =
+document.getElementById("password").value;
+
+
+
+let res = await fetch(
+
+API+"/login",
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+email,
+
+password
+
+})
+
+}
+
+);
+
+
+
+let data = await res.json();
+
+
+
+if(data.success){
+
+
+token=data.token;
+
+
+localStorage.setItem(
+
+"token",
+
+token
+
+);
+
+
+
+localStorage.setItem(
+
+"user",
+
+JSON.stringify(data.user)
+
+);
+
+
+
+showUser();
+
+
+alert(
+
+"登录成功"
+
+);
+
+
+
+}else{
+
+
+alert(
+
+data.message
+
+);
+
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+// 显示用户
+
+function showUser(){
+
+
+let user =
+
+JSON.parse(
+
+localStorage.getItem("user")
+
+);
+
+
+
+if(!user){
+
+return;
+
+}
+
+
+
+document.getElementById(
+
+"loginArea"
+
+).className="hidden";
+
+
+
+document.getElementById(
+
+"userArea"
+
+).className="";
+
+
+
+document.getElementById(
+
+"userEmail"
+
+).innerText=
+
+user.email;
+
+
+
+document.getElementById(
+
+"userVip"
+
+).innerText=
+
+user.vip;
+
+
+
+}
+
+
+
+
+
+
+
+// 退出
+
+function logout(){
+
+
+localStorage.removeItem(
+
+"token"
+
+);
+
+
+localStorage.removeItem(
+
+"user"
+
+);
+
+
+
+token="";
+
+
+location.reload();
+
+
+}
+
+
+
+
+
+
+</script>
+
+
+<!-- 客户搜索区域 -->
+
+
+<div class="card">
+
+
+<h2>
+
+🚀 AI寻找海外客户
+
+</h2>
 
 
 <input
 
 id="product"
 
-placeholder="输入产品，例如：五金工具"
-
+placeholder="输入产品，例如：CNC加工件"
 
 >
 
@@ -182,22 +850,48 @@ placeholder="输入产品，例如：五金工具"
 <select id="country">
 
 
-<option>Germany</option>
+<option>
 
-<option>USA</option>
+Germany
 
-<option>UK</option>
+</option>
 
-<option>France</option>
+
+<option>
+
+USA
+
+</option>
+
+
+<option>
+
+UK
+
+</option>
+
+
+<option>
+
+France
+
+</option>
+
+
+<option>
+
+Canada
+
+</option>
 
 
 </select>
 
 
 
-<button onclick="searchLead()">
+<button onclick="findLeads()">
 
-🚀 搜索海外客户
+开始寻找客户
 
 </button>
 
@@ -218,7 +912,7 @@ placeholder="输入产品，例如：五金工具"
 </h2>
 
 
-<div id="analysis" class="box">
+<div id="analysis">
 
 等待分析...
 
@@ -237,26 +931,27 @@ placeholder="输入产品，例如：五金工具"
 
 <h2>
 
-🏢 客户列表
+🏢 海外客户列表
 
 </h2>
 
 
-<button class="download" onclick="downloadCSV()">
+<button class="green" onclick="downloadCSV()">
 
-📥 导出客户名单
+导出客户名单
 
 </button>
 
 
 <div id="customers">
 
-等待搜索...
+暂无客户
 
 </div>
 
 
 </div>
+
 
 
 
@@ -272,15 +967,11 @@ placeholder="输入产品，例如：五金工具"
 </h2>
 
 
-<div id="email" class="box">
+<textarea id="emailText">
 
-等待生成...
+等待生成
 
-</div>
-
-
-</div>
-
+</textarea>
 
 
 </div>
@@ -292,25 +983,54 @@ placeholder="输入产品，例如：五金工具"
 <script>
 
 
-let csv="";
+
+
+// 搜索客户
+
+async function findLeads(){
 
 
 
-async function searchLead(){
+if(!token){
 
 
-let product =
-document.getElementById("product").value;
+alert(
+
+"请先登录"
+
+);
 
 
-let country =
-document.getElementById("country").value;
+return;
+
+}
+
+
+
+let product=
+
+document.getElementById(
+
+"product"
+
+).value;
+
+
+
+let country=
+
+document.getElementById(
+
+"country"
+
+).value;
+
 
 
 
 let res = await fetch(
 
-"https://ai-export-lead-finder.onrender.com/find-leads",
+API+"/find-leads",
 
 {
 
@@ -318,13 +1038,14 @@ method:"POST",
 
 headers:{
 
-"Content-Type":
-
-"application/json"
+"Content-Type":"application/json"
 
 },
 
+
 body:JSON.stringify({
+
+token,
 
 product,
 
@@ -339,13 +1060,34 @@ country
 
 
 
-let data =
-await res.json();
+let data = await res.json();
+
+
+
+if(data.message){
+
+
+alert(data.message);
+
+
+return;
+
+}
 
 
 
 
-document.getElementById("analysis").innerText =
+
+csvData=data.excel;
+
+
+
+
+document.getElementById(
+
+"analysis"
+
+).innerText=
 
 JSON.stringify(
 
@@ -361,11 +1103,6 @@ null,
 
 
 
-csv=data.excel;
-
-
-
-
 let html="";
 
 
@@ -373,7 +1110,9 @@ let html="";
 data.customers.forEach(c=>{
 
 
-html+=`
+html +=
+
+`
 
 <div class="customer">
 
@@ -386,7 +1125,8 @@ ${c.company}
 
 
 <p>
-🌍 国家：
+
+国家：
 
 ${c.country}
 
@@ -440,77 +1180,114 @@ ${c.contactPerson}
 
 <p>
 
-原因：
+状态：
 
-${c.reason}
+${c.status}
 
 </p>
 
 
 </div>
 
+
 `;
+
 
 
 });
 
 
 
-document.getElementById("customers").innerHTML=html;
+document.getElementById(
+
+"customers"
+
+).innerHTML=
+
+html;
+
 
 
 
 if(data.customers.length){
 
-document.getElementById("email").innerText=
+
+document.getElementById(
+
+"emailText"
+
+).value=
 
 data.customers[0].emailTemplate;
 
-}
-
-
 
 }
 
 
 
+}
 
+
+
+
+
+
+// 导出CSV
 
 function downloadCSV(){
 
 
-if(!csv){
 
-alert("请先搜索客户");
+if(!csvData){
+
+
+alert(
+
+"没有数据"
+
+);
+
 
 return;
 
 }
 
 
-let blob=new Blob(
 
-[csv],
+let blob = new Blob(
+
+[csvData],
 
 {
 
-type:"text/csv;charset=utf-8"
+type:
+
+"text/csv;charset=utf-8"
 
 }
 
 );
 
 
-let url=URL.createObjectURL(blob);
+
+let url=
+
+URL.createObjectURL(blob);
 
 
-let a=document.createElement("a");
+
+let a=
+
+document.createElement("a");
+
 
 
 a.href=url;
 
 
-a.download="海外客户名单.csv";
+a.download=
+
+"海外客户名单.csv";
 
 
 a.click();
