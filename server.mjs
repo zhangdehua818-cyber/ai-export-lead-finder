@@ -5,22 +5,28 @@ import cors from "cors";
 import { analyzeProduct } 
 from "./modules/productAI.js";
 
-import { searchCompanies }
-from "./modules/companySearch.js";
 
-import { scoreCompany }
+import { searchCompanies } 
+from "./companySearch.js";
+
+
+import { scoreCompany } 
 from "./modules/scoring.js";
 
-import { findContact }
+
+import { findContact } 
 from "./modules/emailFinder.js";
 
-import { generateEmail }
+
+import { generateEmail } 
 from "./modules/emailWriter.js";
 
-import { addCustomer }
+
+import { addCustomer } 
 from "./modules/crm.js";
 
-import { exportLeads }
+
+import { exportLeads } 
 from "./modules/exportExcel.js";
 
 
@@ -37,7 +43,7 @@ app.use(express.json());
 app.get("/",(req,res)=>{
 
 res.send(
-"AI Export Lead Finder Ultimate V1.0"
+"AI Export Lead Finder Ultimate V1.0 Running"
 );
 
 });
@@ -75,19 +81,33 @@ type
 
 
 
+// 产品分析
+
 const analysis =
+
 analyzeProduct(
+
 product,
+
 country
+
 );
 
 
+
+
+// 搜索客户
 
 const companies =
+
 await searchCompanies(
+
 product,
+
 country
+
 );
+
 
 
 
@@ -98,25 +118,39 @@ let customers=[];
 for(const company of companies){
 
 
+
 const score =
+
 scoreCompany(company);
 
 
 
+
 const contact =
+
 await findContact(
+
 company,
+
 country
+
 );
+
 
 
 
 const email =
+
 generateEmail(
+
 product,
+
 country,
+
 company.company
+
 );
+
 
 
 
@@ -130,27 +164,32 @@ const customer={
 
 
 score:
+
 score.level,
 
 
 scoreNumber:
+
 score.score,
 
 
 reason:
+
 score.reason,
 
 
 emailTemplate:
+
 email,
 
 
 status:
+
 "未联系"
 
 
-
 };
+
 
 
 
@@ -161,15 +200,21 @@ addCustomer(customer);
 customers.push(customer);
 
 
+
 }
 
 
 
 
+
 const excel =
+
 exportLeads(
+
 customers
+
 );
+
 
 
 
@@ -177,6 +222,7 @@ customers
 res.json({
 
 version:
+
 "Ultimate V1.0",
 
 
@@ -194,6 +240,7 @@ excel
 
 
 });
+
 
 
 
