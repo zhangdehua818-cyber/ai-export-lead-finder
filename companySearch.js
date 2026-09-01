@@ -1,68 +1,100 @@
-import {webSearch}
+import {
+webSearch
+}
 
 from "./modules/searchAPI.js";
 
 
 
-export async function searchCompanies(product,country){
+
+
+export async function searchCompanies(
+
+product,
+
+country
+
+){
 
 
 
-const keyword =
-
-`${product} importer ${country}`;
+const keywords=[
 
 
+`${product} importer ${country}`,
 
-const results =
+
+`${product} distributor ${country}`,
+
+
+`${product} wholesale buyer ${country}`
+
+
+];
+
+
+
+
+let companies=[];
+
+
+
+
+for(
+
+const keyword of keywords
+
+){
+
+
+
+const results=
 
 await webSearch(keyword);
 
 
 
 
-return results.map(item=>{
+results.forEach(item=>{
 
 
-return {
+companies.push({
 
-
-company:
-
-item.title,
+company:item.title,
 
 
 country,
 
 
-type:
-
-"Importer",
+type:"Importer",
 
 
-
-website:
-
-item.url,
+website:item.url,
 
 
-
-description:
-
-item.snippet,
+description:item.snippet,
 
 
-source:
-
-item.source
+source:item.source,
 
 
-
-};
+keyword
 
 
 });
 
+
+});
+
+
+}
+
+
+
+
+
+
+return companies;
 
 
 }
