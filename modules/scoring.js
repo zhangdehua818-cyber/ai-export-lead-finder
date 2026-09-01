@@ -1,35 +1,46 @@
-// V6 客户评分模块
-
-
 export function scoreCompany(company){
 
 
-let score = 0;
+
+let score=60;
 
 
-if(company.industry)
-score += 30;
+
+if(company.type==="Importer"){
+
+score+=20;
+
+}
 
 
-if(company.website)
-score += 30;
+
+if(company.website){
+
+score+=10;
+
+}
 
 
-if(company.type)
-score += 20;
 
+if(company.country){
 
-score +=20;
+score+=10;
+
+}
+
 
 
 
 let level="★★★☆☆";
 
 
-if(score>=80)
+if(score>=90)
+
 level="★★★★★";
 
-else if(score>=60)
+
+else if(score>=75)
+
 level="★★★★☆";
 
 
@@ -39,23 +50,23 @@ return {
 
 score,
 
+
 level,
 
 
 reason:
 
 `
-行业匹配：
-${company.industry || "未知"}
+产品匹配：
+高
 
-官网信息：
-${company.website || "未知"}
+客户类型：
+${company.type}
 
-综合判断：
-适合作为开发目标
+建议：
+优先开发
 
 `
-
 
 };
 
