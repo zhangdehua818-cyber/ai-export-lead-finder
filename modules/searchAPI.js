@@ -1,16 +1,12 @@
-// V9 搜索接口层
-
-
 export async function webSearch(keyword){
 
 
 
-// 当前模拟接口
-// 后续替换真实API
-
+// 真实搜索API接口预留
 
 
 return [
+
 
 {
 
@@ -20,9 +16,11 @@ title:
 url:
 "待获取",
 
-
 description:
-"Potential buyer"
+"Potential buyer",
+
+source:
+"Search"
 
 
 },
@@ -36,17 +34,35 @@ title:
 url:
 "待获取",
 
+description:
+"Distributor",
+
+source:
+"Search"
+
+
+},
+
+
+{
+
+title:
+`${keyword} Importer`,
+
+url:
+"待获取",
 
 description:
-"Potential distributor"
+"Importer",
+
+source:
+"Search"
 
 
 }
 
 
-
 ];
-
 
 
 }
