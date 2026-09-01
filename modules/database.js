@@ -1,35 +1,24 @@
-// V6 客户管理模块
-
-
-let customers=[];
+let database=[];
 
 
 
-export function saveCustomer(customer){
+export function save(data){
 
 
-customers.push({
-
-...customer,
-
-status:"未联系",
-
-createdAt:new Date()
-
-});
+database.push(data);
 
 
-return customers;
+return data;
 
 
 }
 
 
 
-export function getCustomers(){
+export function all(){
 
 
-return customers;
+return database;
 
 
 }
