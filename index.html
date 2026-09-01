@@ -4,117 +4,148 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AI Export Lead Finder</title>
+<title>AI Export Lead Finder V2</title>
 
 <style>
 
 body{
-    font-family:Arial,"Microsoft YaHei";
-    background:#f5f7fb;
-    margin:0;
-    padding:30px;
+font-family:Arial,"Microsoft YaHei";
+background:#f5f7fb;
+margin:0;
+padding:30px;
 }
 
+
 .container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:35px;
-    border-radius:20px;
-    box-shadow:0 10px 30px #ddd;
+max-width:1000px;
+margin:auto;
+}
+
+
+.header{
+text-align:center;
+margin-bottom:30px;
 }
 
 
 h1{
-    color:#1677ff;
-    text-align:center;
+color:#2563eb;
+font-size:38px;
 }
 
 
-.desc{
-    text-align:center;
-    color:#666;
+.subtitle{
+color:#666;
+font-size:18px;
 }
 
 
-.box{
-    margin-top:30px;
-    padding:20px;
-    background:#f8f9fa;
-    border-radius:15px;
+
+.card{
+
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 30px #ddd;
+margin-bottom:25px;
+
 }
+
+
+
+label{
+
+display:block;
+font-weight:bold;
+margin-top:15px;
+
+}
+
 
 
 input,select{
 
 width:100%;
 padding:15px;
-margin-top:15px;
-border:1px solid #ddd;
+margin-top:8px;
 border-radius:10px;
+border:1px solid #ddd;
 font-size:16px;
 
 }
 
 
+
 button{
 
+margin-top:25px;
 width:100%;
-margin-top:20px;
-padding:15px;
-
-background:#1677ff;
+padding:16px;
+background:#2563eb;
 color:white;
-
 border:none;
-border-radius:10px;
-
+border-radius:12px;
 font-size:18px;
-
 cursor:pointer;
 
 }
 
 
+
 button:hover{
 
-background:#0958d9;
+background:#1d4ed8;
 
 }
+
+
+
+.loading{
+
+display:none;
+text-align:center;
+padding:20px;
+font-size:18px;
+color:#2563eb;
+
+}
+
 
 
 .result{
 
-margin-top:30px;
-
+background:#f8fafc;
+border-left:5px solid #2563eb;
 padding:20px;
-
-background:#eef6ff;
-
-border-radius:15px;
-
-display:none;
+margin-top:15px;
+border-radius:10px;
 
 }
 
 
-.card{
 
-background:white;
+.tag{
 
+display:inline-block;
+background:#dbeafe;
+padding:5px 10px;
+border-radius:20px;
+margin-right:8px;
+
+}
+
+
+.mail{
+
+background:#ecfdf5;
 padding:15px;
-
-margin-top:15px;
-
 border-radius:10px;
-
-border-left:5px solid #1677ff;
+margin-top:15px;
 
 }
 
 
 </style>
-
 
 </head>
 
@@ -125,93 +156,83 @@ border-left:5px solid #1677ff;
 <div class="container">
 
 
-<h1>
-AI Export Lead Finder
-</h1>
+<div class="header">
+
+<h1>AI Export Lead Finder</h1>
+
+<div class="subtitle">
+AI外贸客户开发助手 · 自动寻找海外潜在买家
+</div>
+
+</div>
 
 
-<p class="desc">
-AI外贸客户开发助手 · 自动寻找海外潜在客户
-</p>
+
+<div class="card">
 
 
-
-<div class="box">
-
-
-<h3>
-输入产品信息
-</h3>
+<h2>寻找海外客户</h2>
 
 
-<input id="product"
-placeholder="例如：solar panel / power bank / sportswear">
+<label>产品名称</label>
 
+<input id="product" value="CNC Aluminum Parts">
+
+
+<label>目标国家</label>
 
 <select id="country">
 
-<option>
-目标国家
-</option>
-
 <option>USA</option>
-<option>UK</option>
 <option>Germany</option>
+<option>UK</option>
 <option>Canada</option>
-<option>Australia</option>
 
 </select>
 
 
-<button onclick="findLead()">
+<label>客户类型</label>
+
+<select id="type">
+
+<option>进口商</option>
+<option>批发商</option>
+<option>制造商</option>
+
+</select>
+
+
+
+<button onclick="searchLead()">
 开始寻找客户
 </button>
 
 
-</div>
+<div class="loading" id="loading">
 
+AI正在分析海外市场...<br><br>
 
-
-
-<div id="result" class="result">
-
-
-<h3>
-潜在客户
-</h3>
-
-
-<div class="card">
-
-公司:
-SolarTech Inc
-
-国家:
-USA
-
-类型:
-进口商
-
-联系方式:
-sales@solartech.com
+✓ 产品关键词分析<br>
+✓ 买家类型筛选<br>
+✓ 潜在客户匹配<br>
+✓ 联系方式整理
 
 </div>
+
+
+</div>
+
 
 
 
 <div class="card">
 
-公司:
-Global Energy Ltd
 
-国家:
-Germany
+<h2>潜在客户</h2>
 
-类型:
-分销商
+<div id="results">
 
-联系方式:
-contact@globalenergy.com
+等待搜索...
 
 </div>
 
@@ -221,6 +242,7 @@ contact@globalenergy.com
 
 
 </div>
+
 
 
 
@@ -228,22 +250,146 @@ contact@globalenergy.com
 <script>
 
 
-function findLead(){
+async function searchLead(){
 
 
-let result=document.getElementById("result");
+let product=document.getElementById("product").value;
+
+let country=document.getElementById("country").value;
+
+let type=document.getElementById("type").value;
 
 
-result.style.display="block";
+document.getElementById("loading").style.display="block";
+
+
+document.getElementById("results").innerHTML="";
+
+
+
+let res=await fetch("/search",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+product,
+country,
+type
+
+})
+
+});
+
+
+let data=await res.json();
+
+
+document.getElementById("loading").style.display="none";
+
+
+
+let html="";
+
+
+data.forEach((item,index)=>{
+
+
+html+=`
+
+<div class="result">
+
+
+<h3>
+${index+1}. ${item.company}
+</h3>
+
+
+<span class="tag">
+${item.country}
+</span>
+
+<span class="tag">
+${item.type}
+</span>
+
+
+<p>
+官网：
+${item.website}
+</p>
+
+
+<p>
+联系人：
+${item.contact}
+</p>
+
+
+<p>
+邮箱：
+${item.email}
+</p>
+
+
+<p>
+匹配原因：
+${item.reason}
+</p>
+
+
+
+<button onclick="createMail('${item.company}')">
+
+生成开发信
+
+</button>
+
+
+<div id="mail-${index}" class="mail" style="display:none">
+
+</div>
+
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+document.getElementById("results").innerHTML=html;
 
 
 }
 
 
+
+async function createMail(company){
+
+
+alert(
+
+"正在生成给 "+company+" 的英文开发信..."
+
+);
+
+
+}
+
+
+
 </script>
 
 
+
 </body>
-
-
 </html>
