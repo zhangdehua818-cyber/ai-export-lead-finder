@@ -1,278 +1,30 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-<title>AI Export Lead Finder</title>
-
-
-<style>
-
-body{
-font-family:Arial,"Microsoft YaHei";
-background:#f5f7fb;
-padding:30px;
-}
-
-
-.container{
-max-width:900px;
-margin:auto;
-background:white;
-padding:30px;
-border-radius:20px;
-box-shadow:0 10px 30px #ddd;
-}
-
-
-h1{
-color:#2563eb;
-}
-
-
-input,select{
-
-width:100%;
-padding:15px;
-margin:10px 0;
-
-border:1px solid #ddd;
-border-radius:10px;
-
-font-size:16px;
-
-}
-
-
-button{
-
-width:100%;
-padding:15px;
-
-background:#2563eb;
-
-color:white;
-
-border:none;
-
-border-radius:10px;
-
-font-size:18px;
-
-cursor:pointer;
-
-}
-
-
-
-.result{
-
-margin-top:20px;
-
-background:#f8fafc;
-
-padding:20px;
-
-border-radius:15px;
-
-}
-
-
-
-.item{
-
-background:white;
-
-padding:15px;
-
-margin-top:15px;
-
-border-left:5px solid #2563eb;
-
-border-radius:10px;
-
-}
-
-
-</style>
-
-
-</head>
-
-
-<body>
-
-
-<div class="container">
-
-
-<h1>
 AI Export Lead Finder
-</h1>
 
+输入产品：
+[ CNC加工件 ]
 
-<p>
-AI外贸客户开发助手
-</p>
+国家：
+[ 德国 ]
 
+开始分析
 
 
-<input id="product" placeholder="输入产品，例如 CNC加工件">
+====== AI市场分析 ======
 
+德国市场需求：
+...
 
-<select id="country">
+客户画像：
+...
 
-<option>USA</option>
-<option>Germany</option>
-<option>UK</option>
-<option>Canada</option>
+搜索关键词：
+...
 
-</select>
+====== 推荐客户 ======
 
+公司A
+匹配度★★★★★
 
+====== 开发信 ======
 
-<select id="type">
-
-<option>进口商</option>
-<option>批发商</option>
-<option>制造商</option>
-
-</select>
-
-
-
-
-<button onclick="searchLead()">
-
-开始寻找客户
-
-</button>
-
-
-
-<div id="result" class="result">
-
-等待搜索...
-
-</div>
-
-
-
-</div>
-
-
-
-
-<script>
-
-
-async function searchLead(){
-
-
-let product=document.getElementById("product").value;
-
-let country=document.getElementById("country").value;
-
-let type=document.getElementById("type").value;
-
-
-
-document.getElementById("result").innerHTML=
-"AI正在搜索客户...";
-
-
-
-try{
-
-
-let response=await fetch(
-
-"https://ai-export-lead-finder.onrender.com/find-leads",
-
-{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-
-body:JSON.stringify({
-
-product,
-country,
-type
-
-})
-
-
-}
-
-);
-
-
-
-let data=await response.json();
-
-
-
-let html="";
-
-
-data.leads.forEach(item=>{
-
-
-html+=`
-
-<div class="item">
-
-<h3>${item.company}</h3>
-
-<p>国家：${item.country}</p>
-
-<p>类型：${item.type}</p>
-
-<p>邮箱：${item.email}</p>
-
-<p>匹配度：${item.score}</p>
-
-</div>
-
-
-`;
-
-
-});
-
-
-
-document.getElementById("result").innerHTML=html;
-
-
-
-}catch(e){
-
-
-document.getElementById("result").innerHTML=
-
-"连接失败："+e.message;
-
-
-}
-
-
-}
-
-
-</script>
-
-
-</body>
-
-</html>
+Dear Purchasing Manager...
