@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import { generateSearch } from "./search.js";
+import { searchCompanies } from "./companySearch.js";
 
 
 const app = express();
@@ -15,7 +16,7 @@ app.use(express.json());
 
 app.get("/",(req,res)=>{
 
-res.send("AI Export Lead Finder V5.1 Running");
+res.send("AI Export Lead Finder V5.2 Running");
 
 });
 
@@ -50,8 +51,7 @@ type
 
 
 
-
-// 调用搜索模块
+// 搜索关键词
 
 const searchData = generateSearch(
 
@@ -60,6 +60,18 @@ product,
 country,
 
 type
+
+);
+
+
+
+// 企业搜索
+
+const companies = searchCompanies(
+
+product,
+
+country
 
 );
 
@@ -77,24 +89,22 @@ const market = `
 ${product}
 
 
-目标国家：
+目标市场：
 
 ${country}
-
 
 
 推荐客户：
 
 ✓ ${product}进口商
 
-✓ ${product}批发商
+✓ ${product}分销商
 
-✓ ${product}经销商
+✓ ${product}批发商
 
 
 
 `;
-
 
 
 
@@ -105,24 +115,22 @@ const strategy = `
 🎯 客户筛选策略
 
 
-优先寻找：
+优先：
 
-1. 有采购页面的网站
+✓ 官网存在
 
-2. 有进口业务的企业
+✓ 有采购需求
 
-3. 同行业分销商
+✓ 产品相关
 
 
 开发重点：
 
-✓ 中国供应链
+✓ 工厂优势
 
 ✓ OEM能力
 
-✓ 价格优势
-
-✓ 稳定交付
+✓ 交付能力
 
 
 
@@ -132,9 +140,10 @@ const strategy = `
 
 
 
+
 const channels = `
 
-🌍 推荐开发渠道
+🌍 开发渠道
 
 
 Google
@@ -145,7 +154,7 @@ Europages
 
 Kompass
 
-行业协会网站
+行业目录
 
 
 
@@ -163,29 +172,26 @@ const mail = `
 
 Subject:
 
-${product} Supplier Cooperation Opportunity
+${product} Cooperation Opportunity
 
 
 
 Dear Purchasing Manager,
 
 
-We are a professional manufacturer specializing in ${product}.
+We are a manufacturer specializing in ${product}.
 
 
 We provide:
 
-- Factory direct price
+- Factory price
 
 - OEM service
 
 - Stable supply
 
 
-We are looking for partners in ${country}.
-
-
-Looking forward to cooperation.
+Looking for cooperation opportunities in ${country}.
 
 
 
@@ -195,33 +201,6 @@ Best regards
 
 `;
 
-
-
-
-
-
-const leads = searchData.targets.map(item=>{
-
-
-return {
-
-company:item.company,
-
-country:item.country,
-
-type:item.type,
-
-website:item.website,
-
-email:"待获取",
-
-score:item.score
-
-
-};
-
-
-});
 
 
 
@@ -238,7 +217,8 @@ country,
 market,
 
 
-keywords:searchData.keywords,
+keywords:
+searchData.keywords,
 
 
 channels,
@@ -250,7 +230,8 @@ strategy,
 mail,
 
 
-leads
+leads:
+companies
 
 
 
@@ -258,9 +239,7 @@ leads
 
 
 
-
 });
-
 
 
 
@@ -271,7 +250,7 @@ app.listen(3000,()=>{
 
 console.log(
 
-"AI Export Lead Finder V5.1 running"
+"AI Export Lead Finder V5.2 running"
 
 );
 
