@@ -1,14 +1,14 @@
 // V9 企业搜索模块
 
-
-export async function searchCompanies(product,country){
-
+import { webSearch } from "./modules/searchAPI.js";
 
 
-// 这里以后接真实搜索API
+
+export async function searchCompanies(product, country){
 
 
-const keywords=[
+
+const keywords = [
 
 `${product} importer ${country}`,
 
@@ -22,94 +22,77 @@ const keywords=[
 
 
 
+// 调用搜索接口
+
+const results = await webSearch(
+
+keywords[0]
+
+);
 
 
-// 当前返回搜索任务结构
 
 
-return [
+
+return results.map((item,index)=>{
 
 
-{
+return {
+
 
 company:
-`${country} ${product} Importer`,
+
+item.title || `${country} ${product} Company`,
+
+
 
 country,
 
-type:
-"Importer",
-
-website:
-"搜索中",
-
-email:
-"待获取",
-
-keywords,
-
-
-source:
-"AI Search"
-
-
-},
-
-
-
-{
-
-company:
-`${country} ${product} Distribution`,
-
-country,
 
 type:
+
+index===0
+
+?
+
+"Importer"
+
+:
+
 "Distributor",
 
+
+
 website:
-"搜索中",
+
+item.url || "待获取",
+
+
 
 email:
+
 "待获取",
 
-keywords,
+
+
+keyword:
+
+keywords[0],
+
 
 
 source:
-"AI Search"
 
-},
-
-
-
-{
-
-company:
-`${country} ${product} Wholesale`,
-
-country,
-
-type:
-"Wholesaler",
-
-website:
-"搜索中",
-
-email:
-"待获取",
-
-keywords,
-
-
-source:
-"AI Search"
-
-}
+item.source || "AI Search"
 
 
 
-];
+};
+
+
+
+});
+
 
 
 }
