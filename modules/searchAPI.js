@@ -1,64 +1,78 @@
 export async function webSearch(keyword){
 
 
+/*
 
-return [
+这里预留真实搜索接口
+
+后续可以接：
+
+Google Custom Search API
+
+Bing Search API
+
+SerpAPI
+
+*/
+
+
+let results=[
 
 
 {
-
 title:
-`${keyword} Company`,
+`${keyword} GmbH`,
 
 url:
-"待获取",
+"https://example-company.com",
 
-description:
-"海外采购商",
+snippet:
+"Importer distributor supplier",
 
 source:
-"AI Search"
+"Search Engine"
 
 },
 
 
-
 {
-
 title:
-`${keyword} Distributor`,
+`${keyword} Trading Company`,
 
 url:
-"待获取",
+"https://example-trading.com",
 
-description:
-"分销商",
+snippet:
+"Wholesale buyer",
 
 source:
-"AI Search"
+"Search Engine"
 
 },
 
 
-
 {
-
 title:
-`${keyword} Importer`,
+`${keyword} Solutions`,
 
 url:
-"待获取",
+"https://example-solutions.com",
 
-description:
-"进口商",
+snippet:
+"Industrial supplier",
 
 source:
-"AI Search"
+"Search Engine"
 
 }
 
 
+
 ];
+
+
+
+return results;
 
 
 }
