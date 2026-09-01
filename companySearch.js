@@ -1,5 +1,7 @@
 import { webSearch }
-from "./searchAPI.js";
+
+from "./modules/searchAPI.js";
+
 
 
 
