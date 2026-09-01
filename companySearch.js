@@ -1,35 +1,21 @@
-// V9 企业搜索模块
-
-import { webSearch } from "./modules/searchAPI.js";
-
-
-
-export async function searchCompanies(product, country){
+import { webSearch }
+from "./searchAPI.js";
 
 
 
-const keywords = [
-
-`${product} importer ${country}`,
-
-`${product} distributor ${country}`,
-
-`${product} wholesaler ${country}`,
-
-`${product} buyer ${country}`
-
-];
+export async function searchCompanies(product,country){
 
 
 
-// 调用搜索接口
+const keyword =
 
-const results = await webSearch(
+`${product} importer ${country}`;
 
-keywords[0]
 
-);
 
+const results =
+
+await webSearch(keyword);
 
 
 
@@ -42,8 +28,7 @@ return {
 
 company:
 
-item.title || `${country} ${product} Company`,
-
+item.title,
 
 
 country,
@@ -65,8 +50,7 @@ index===0
 
 website:
 
-item.url || "待获取",
-
+item.url,
 
 
 email:
@@ -75,20 +59,16 @@ email:
 
 
 
-keyword:
-
-keywords[0],
-
-
-
 source:
 
-item.source || "AI Search"
+item.source,
+
+
+keyword
 
 
 
 };
-
 
 
 });
