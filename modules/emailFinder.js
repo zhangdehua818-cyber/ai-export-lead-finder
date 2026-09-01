@@ -1,52 +1,43 @@
-// V9 邮箱发现模块
-
-
-export async function findContact(company, website, country){
-
-
-
-// 后续这里接邮箱API
-
-
-let domain = website || "";
+export async function findContact(company,country){
 
 
 
 return {
 
 
-company,
-
-
-country,
-
-
 contactPerson:
+
 "Purchasing Manager",
 
 
 email:
-"待搜索",
+
+"待获取",
 
 
 linkedin:
-"待搜索",
+
+"待获取",
 
 
 phone:
-"待搜索",
+
+"待获取",
 
 
-domain,
+emailSources:[
 
+"sales@",
 
-source:
-"AI Email Finder"
+"info@",
+
+"contact@"
+
+]
 
 
 
 };
-
 
 
 }
