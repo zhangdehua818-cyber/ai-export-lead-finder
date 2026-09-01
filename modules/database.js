@@ -2,15 +2,13 @@ import sqlite3 from "sqlite3";
 
 
 const db = new sqlite3.Database(
-"./database/app.db"
+"./app.db"
 );
 
 
 
 db.serialize(()=>{
 
-
-// 用户表
 
 db.run(`
 
@@ -36,7 +34,6 @@ createdAt TEXT
 
 
 
-// 客户线索表
 
 db.run(`
 
@@ -66,8 +63,6 @@ createdAt TEXT
 
 
 
-
-// 订单表
 
 db.run(`
 
