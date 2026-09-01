@@ -1,66 +1,113 @@
-export function searchCompanies(product, country){
+// V9 企业搜索模块
+
+
+export async function searchCompanies(product,country){
+
+
+
+// 这里以后接真实搜索API
+
+
+const keywords=[
+
+`${product} importer ${country}`,
+
+`${product} distributor ${country}`,
+
+`${product} wholesaler ${country}`,
+
+`${product} buyer ${country}`
+
+];
+
+
+
+
+
+// 当前返回搜索任务结构
 
 
 return [
 
+
 {
+
 company:
-`${country} ${product} Trading GmbH`,
+`${country} ${product} Importer`,
 
-country:country,
+country,
 
-type:"Importer",
+type:
+"Importer",
 
-website:"待获取",
+website:
+"搜索中",
 
-email:"待获取",
+email:
+"待获取",
 
-score:"★★★★★",
+keywords,
 
-reason:
-"产品匹配，可能存在采购需求"
+
+source:
+"AI Search"
+
 
 },
 
 
+
 {
+
 company:
-`Global ${product} Distribution`,
+`${country} ${product} Distribution`,
 
-country:country,
+country,
 
-type:"Distributor",
+type:
+"Distributor",
 
-website:"待获取",
+website:
+"搜索中",
 
-email:"待获取",
+email:
+"待获取",
 
-score:"★★★★☆",
+keywords,
 
-reason:
-"行业相关，适合作为开发目标"
+
+source:
+"AI Search"
 
 },
 
 
+
 {
+
 company:
-`European ${product} Supply Co.`,
+`${country} ${product} Wholesale`,
 
-country:country,
+country,
 
-type:"Wholesaler",
+type:
+"Wholesaler",
 
-website:"待获取",
+website:
+"搜索中",
 
-email:"待获取",
+email:
+"待获取",
 
-score:"★★★★☆",
+keywords,
 
-reason:
-"具备渠道合作可能"
+
+source:
+"AI Search"
 
 }
+
+
 
 ];
 
