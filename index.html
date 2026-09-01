@@ -1,30 +1,457 @@
-AI Export Lead Finder
+<!DOCTYPE html>
+<html lang="zh-CN">
 
-输入产品：
-[ CNC加工件 ]
+<head>
 
-国家：
-[ 德国 ]
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-开始分析
+<title>AI Export Lead Finder V3</title>
 
 
-====== AI市场分析 ======
+<style>
 
-德国市场需求：
-...
+body{
 
-客户画像：
-...
+font-family:Arial,"Microsoft YaHei";
 
-搜索关键词：
-...
+background:#f5f7fb;
 
-====== 推荐客户 ======
+padding:30px;
 
-公司A
-匹配度★★★★★
+}
 
-====== 开发信 ======
 
-Dear Purchasing Manager...
+.container{
+
+max-width:1000px;
+
+margin:auto;
+
+}
+
+
+.card{
+
+background:white;
+
+padding:30px;
+
+border-radius:20px;
+
+box-shadow:0 10px 30px #ddd;
+
+margin-bottom:25px;
+
+}
+
+
+
+h1{
+
+color:#2563eb;
+
+text-align:center;
+
+}
+
+
+input,select{
+
+width:100%;
+
+padding:15px;
+
+margin-top:10px;
+
+border-radius:10px;
+
+border:1px solid #ddd;
+
+font-size:16px;
+
+}
+
+
+
+button{
+
+width:100%;
+
+padding:15px;
+
+margin-top:20px;
+
+background:#2563eb;
+
+color:white;
+
+border:0;
+
+border-radius:10px;
+
+font-size:18px;
+
+cursor:pointer;
+
+}
+
+
+
+button:hover{
+
+background:#1d4ed8;
+
+}
+
+
+
+.result{
+
+background:#f8fafc;
+
+padding:20px;
+
+border-radius:15px;
+
+margin-top:20px;
+
+white-space:pre-line;
+
+}
+
+
+
+.item{
+
+background:white;
+
+padding:20px;
+
+margin-top:15px;
+
+border-left:5px solid #2563eb;
+
+border-radius:10px;
+
+}
+
+
+
+.tag{
+
+display:inline-block;
+
+background:#dbeafe;
+
+padding:5px 10px;
+
+border-radius:20px;
+
+margin-right:10px;
+
+}
+
+
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+<div class="container">
+
+
+<div class="card">
+
+
+<h1>
+🌎 AI Export Lead Finder
+</h1>
+
+
+<p style="text-align:center">
+
+AI外贸客户开发助手 V3
+
+</p>
+
+
+<input id="product"
+placeholder="输入产品，例如：CNC加工件">
+
+
+<select id="country">
+
+<option>Germany</option>
+
+<option>USA</option>
+
+<option>UK</option>
+
+<option>Canada</option>
+
+<option>Australia</option>
+
+</select>
+
+
+
+<select id="type">
+
+<option>进口商</option>
+
+<option>批发商</option>
+
+<option>经销商</option>
+
+<option>制造商</option>
+
+</select>
+
+
+
+<button onclick="searchLead()">
+
+开始AI分析
+
+</button>
+
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>
+📊 AI市场分析
+</h2>
+
+
+<div id="analysis" class="result">
+
+等待分析...
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>
+🏢 潜在客户
+</h2>
+
+
+<div id="leads">
+
+等待搜索...
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+async function searchLead(){
+
+
+let product=document.getElementById("product").value;
+
+let country=document.getElementById("country").value;
+
+let type=document.getElementById("type").value;
+
+
+
+document.getElementById("analysis").innerHTML=
+"AI正在分析市场，请稍候...";
+
+
+document.getElementById("leads").innerHTML=
+"正在匹配客户...";
+
+
+
+try{
+
+
+let response=await fetch(
+
+"https://ai-export-lead-finder.onrender.com/find-leads",
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+product,
+
+country,
+
+type
+
+})
+
+}
+
+);
+
+
+
+let data=await response.json();
+
+
+
+document.getElementById("analysis").innerText=data.analysis;
+
+
+
+let html="";
+
+
+
+data.leads.forEach((item,index)=>{
+
+
+html+=`
+
+<div class="item">
+
+
+<h3>
+
+${index+1}. ${item.company}
+
+</h3>
+
+
+<span class="tag">
+
+${item.country}
+
+</span>
+
+
+<span class="tag">
+
+${item.type}
+
+</span>
+
+
+
+<p>
+
+官网：
+
+${item.website}
+
+</p>
+
+
+
+<p>
+
+邮箱：
+
+${item.email}
+
+</p>
+
+
+
+<p>
+
+匹配度：
+
+${item.score}
+
+</p>
+
+
+<button onclick="generateMail('${item.company}')">
+
+生成开发信
+
+</button>
+
+
+</div>
+
+
+`;
+
+
+});
+
+
+
+document.getElementById("leads").innerHTML=html;
+
+
+
+}
+
+catch(error){
+
+
+document.getElementById("analysis").innerText=
+
+"连接失败："+error.message;
+
+
+}
+
+
+
+}
+
+
+
+function generateMail(company){
+
+
+alert(
+
+"正在生成给 "+company+" 的英文开发信"
+
+);
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
