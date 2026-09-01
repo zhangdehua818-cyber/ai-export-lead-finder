@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-CN">
 
 <head>
@@ -8,9 +7,8 @@
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-
 <title>
-AI外贸客户开发助手 Ultimate V1.0
+AI外贸客户开发助手 Ultimate
 </title>
 
 
@@ -19,15 +17,13 @@ AI外贸客户开发助手 Ultimate V1.0
 body{
 
 font-family:
-
-"Microsoft YaHei",Arial;
+Microsoft YaHei,Arial;
 
 background:#f5f7fb;
 
 padding:30px;
 
 }
-
 
 
 .container{
@@ -37,7 +33,6 @@ max-width:1100px;
 margin:auto;
 
 }
-
 
 
 .card{
@@ -72,13 +67,11 @@ width:100%;
 
 padding:14px;
 
-margin:8px 0;
+margin:10px 0;
 
 border-radius:10px;
 
 border:1px solid #ddd;
-
-font-size:16px;
 
 }
 
@@ -94,27 +87,11 @@ background:#2563eb;
 
 color:white;
 
-border:none;
+border:0;
 
 border-radius:10px;
 
 font-size:18px;
-
-cursor:pointer;
-
-}
-
-
-
-.box{
-
-background:#f8fafc;
-
-padding:20px;
-
-border-radius:15px;
-
-white-space:pre-line;
 
 }
 
@@ -122,9 +99,7 @@ white-space:pre-line;
 
 .customer{
 
-background:#fff;
-
-border-left:5px solid #2563eb;
+background:#f8fafc;
 
 padding:20px;
 
@@ -132,8 +107,9 @@ margin-top:15px;
 
 border-radius:12px;
 
-}
+border-left:5px solid #2563eb;
 
+}
 
 
 .score{
@@ -145,12 +121,23 @@ color:#2563eb;
 }
 
 
+.box{
+
+white-space:pre-line;
+
+background:#f8fafc;
+
+padding:20px;
+
+border-radius:15px;
+
+}
+
+
 
 .download{
 
 background:#16a34a;
-
-margin-top:15px;
 
 }
 
@@ -158,16 +145,13 @@ margin-top:15px;
 
 </style>
 
-
 </head>
-
 
 
 <body>
 
 
 <div class="container">
-
 
 
 <div class="card">
@@ -184,22 +168,15 @@ Ultimate V1.0
 </h1>
 
 
-<p style="text-align:center">
-
-AI寻找海外采购商 · 自动开发客户
-
-</p>
-
-
 
 <input
 
 id="product"
 
-placeholder="输入产品，例如：CNC加工件"
+placeholder="输入产品，例如：五金工具"
+
 
 >
-
 
 
 <select id="country">
@@ -213,22 +190,6 @@ placeholder="输入产品，例如：CNC加工件"
 
 <option>France</option>
 
-<option>Canada</option>
-
-
-</select>
-
-
-
-<select id="type">
-
-
-<option>Importer</option>
-
-<option>Distributor</option>
-
-<option>Wholesaler</option>
-
 
 </select>
 
@@ -236,10 +197,9 @@ placeholder="输入产品，例如：CNC加工件"
 
 <button onclick="searchLead()">
 
-🚀 开始寻找客户
+🚀 搜索海外客户
 
 </button>
-
 
 
 </div>
@@ -252,7 +212,9 @@ placeholder="输入产品，例如：CNC加工件"
 
 
 <h2>
-📊 AI产品分析
+
+📊 产品分析
+
 </h2>
 
 
@@ -263,8 +225,8 @@ placeholder="输入产品，例如：CNC加工件"
 </div>
 
 
-
 </div>
+
 
 
 
@@ -274,7 +236,9 @@ placeholder="输入产品，例如：CNC加工件"
 
 
 <h2>
-🏢 海外客户列表
+
+🏢 客户列表
+
 </h2>
 
 
@@ -302,7 +266,9 @@ placeholder="输入产品，例如：CNC加工件"
 
 
 <h2>
+
 ✉️ AI开发信
+
 </h2>
 
 
@@ -323,81 +289,58 @@ placeholder="输入产品，例如：CNC加工件"
 
 
 
-
 <script>
 
 
-let csvData="";
+let csv="";
 
 
 
 async function searchLead(){
 
 
-
-const product =
-
+let product =
 document.getElementById("product").value;
 
 
-
-const country =
-
+let country =
 document.getElementById("country").value;
 
 
 
-const type =
-
-document.getElementById("type").value;
-
-
-
-
-const res = await fetch(
-
+let res = await fetch(
 
 "https://ai-export-lead-finder.onrender.com/find-leads",
 
-
 {
-
 
 method:"POST",
 
-
 headers:{
-
 
 "Content-Type":
 
 "application/json"
 
-
 },
-
 
 body:JSON.stringify({
 
-
 product,
 
-country,
-
-type
-
+country
 
 })
 
 
 }
 
-
 );
 
 
 
-const data = await res.json();
+let data =
+await res.json();
 
 
 
@@ -417,7 +360,8 @@ null,
 
 
 
-csvData = data.excel;
+
+csv=data.excel;
 
 
 
@@ -429,9 +373,7 @@ let html="";
 data.customers.forEach(c=>{
 
 
-
-html += `
-
+html+=`
 
 <div class="customer">
 
@@ -444,13 +386,11 @@ ${c.company}
 
 
 <p>
-
 🌍 国家：
 
 ${c.country}
 
 </p>
-
 
 
 <p>
@@ -462,7 +402,6 @@ ${c.type}
 </p>
 
 
-
 <p class="score">
 
 评分：
@@ -470,7 +409,6 @@ ${c.type}
 ${c.score}
 
 </p>
-
 
 
 <p>
@@ -482,7 +420,6 @@ ${c.website}
 </p>
 
 
-
 <p>
 
 邮箱：
@@ -490,7 +427,6 @@ ${c.website}
 ${c.email}
 
 </p>
-
 
 
 <p>
@@ -502,17 +438,6 @@ ${c.contactPerson}
 </p>
 
 
-
-<p>
-
-状态：
-
-${c.status}
-
-</p>
-
-
-
 <p>
 
 原因：
@@ -522,31 +447,24 @@ ${c.reason}
 </p>
 
 
-
 </div>
 
-
 `;
-
 
 
 });
 
 
 
-
-document.getElementById("customers").innerHTML = html;
-
+document.getElementById("customers").innerHTML=html;
 
 
 
-if(data.customers.length>0){
+if(data.customers.length){
 
-
-document.getElementById("email").innerText =
+document.getElementById("email").innerText=
 
 data.customers[0].emailTemplate;
-
 
 }
 
@@ -561,53 +479,38 @@ data.customers[0].emailTemplate;
 function downloadCSV(){
 
 
+if(!csv){
 
-if(!csvData){
-
-
-alert(
-
-"请先搜索客户"
-
-);
-
+alert("请先搜索客户");
 
 return;
 
-
 }
 
 
+let blob=new Blob(
 
-const blob = new Blob(
-
-[csvData],
+[csv],
 
 {
 
-type:
-
-"text/csv;charset=utf-8"
+type:"text/csv;charset=utf-8"
 
 }
 
 );
 
 
-
-const url = URL.createObjectURL(blob);
-
+let url=URL.createObjectURL(blob);
 
 
-const a=document.createElement("a");
+let a=document.createElement("a");
 
 
 a.href=url;
 
 
-a.download=
-
-"海外客户名单.csv";
+a.download="海外客户名单.csv";
 
 
 a.click();
@@ -619,7 +522,6 @@ a.click();
 
 
 </script>
-
 
 
 </body>
