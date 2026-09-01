@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>AI Export Lead Finder V4</title>
+<title>AI外贸客户开发助手 V5.2</title>
 
 <style>
 
@@ -16,92 +16,60 @@ background:#f5f7fb;
 padding:30px;
 }
 
-
 .container{
 max-width:1000px;
 margin:auto;
 }
 
-
 .card{
-
 background:white;
-padding:30px;
+padding:25px;
 border-radius:20px;
-margin-bottom:25px;
-box-shadow:0 10px 30px #ddd;
-
+margin-bottom:20px;
+box-shadow:0 8px 25px #ddd;
 }
-
 
 h1{
 color:#2563eb;
 text-align:center;
 }
 
-
 input,select{
-
 width:100%;
-padding:15px;
-margin-top:12px;
-border:1px solid #ddd;
+padding:14px;
+margin-top:10px;
 border-radius:10px;
+border:1px solid #ddd;
 font-size:16px;
-
 }
-
 
 button{
-
 width:100%;
 padding:15px;
-margin-top:20px;
-
+margin-top:15px;
 background:#2563eb;
 color:white;
-
-border:none;
+border:0;
 border-radius:10px;
-
 font-size:18px;
-
 cursor:pointer;
-
 }
 
-
-
-.section{
-
+.box{
 background:#f8fafc;
 padding:20px;
-
 border-radius:15px;
-
 white-space:pre-line;
-
-margin-top:15px;
-
+margin-top:10px;
 }
-
-
 
 .customer{
-
-background:white;
-
-border-left:5px solid #2563eb;
-
 padding:20px;
-
+background:white;
+border-left:5px solid #2563eb;
 margin-top:15px;
-
 border-radius:10px;
-
 }
-
-
 
 </style>
 
@@ -116,109 +84,78 @@ border-radius:10px;
 
 <div class="card">
 
-
 <h1>
-🌎 AI Export Lead Finder
+🌎 AI外贸客户开发助手 V5.2
 </h1>
 
-
 <p style="text-align:center">
-AI外贸客户开发助手 V4
+AI寻找海外采购商
 </p>
 
 
-
-<input id="product"
-placeholder="输入产品，例如：五金工具">
+<input id="product" placeholder="输入产品，例如：CNC加工件">
 
 
 <select id="country">
 
 <option>Germany</option>
-
 <option>USA</option>
-
 <option>UK</option>
-
 <option>Canada</option>
 
 </select>
 
 
-
 <select id="type">
 
 <option>进口商</option>
-
-<option>批发商</option>
-
 <option>经销商</option>
+<option>批发商</option>
 
 </select>
 
 
-
 <button onclick="searchLead()">
 
-开始AI分析
+开始寻找客户
 
 </button>
 
 
-
 </div>
-
 
 
 
 <div class="card">
 
-<h2>
-📊 市场分析
-</h2>
+<h2>📊 市场分析</h2>
 
-<div id="market" class="section">
-
+<div id="market" class="box">
 等待分析...
-
 </div>
 
 
-<h2>
-🔎 搜索关键词
-</h2>
+<h2>🔎 搜索关键词</h2>
 
-<div id="search" class="section">
-
+<div id="keywords" class="box">
 </div>
 
 
-<h2>
-🌍 开发渠道
-</h2>
+<h2>🌍 开发渠道</h2>
 
-<div id="channels" class="section">
-
+<div id="channels" class="box">
 </div>
 
 
+<h2>🎯 客户策略</h2>
 
-<h2>
-🎯 客户开发策略
-</h2>
-
-<div id="strategy" class="section">
-
+<div id="strategy" class="box">
 </div>
 
 
+<h2>✉️ AI开发信</h2>
 
-<h2>
-✉️ AI开发信
-</h2>
-
-<div id="mail" class="section">
-
+<div id="mail" class="box">
 </div>
 
 
@@ -229,9 +166,7 @@ placeholder="输入产品，例如：五金工具">
 
 <div class="card">
 
-<h2>
-🏢 推荐客户
-</h2>
+<h2>🏢 潜在客户</h2>
 
 
 <div id="leads">
@@ -255,25 +190,20 @@ placeholder="输入产品，例如：五金工具">
 async function searchLead(){
 
 
-let product=
+let product =
 document.getElementById("product").value;
 
 
-let country=
+let country =
 document.getElementById("country").value;
 
 
-let type=
+let type =
 document.getElementById("type").value;
 
 
 
-document.getElementById("market").innerText=
-"AI分析中...";
-
-
-
-let response=await fetch(
+let res = await fetch(
 
 "https://ai-export-lead-finder.onrender.com/find-leads",
 
@@ -286,7 +216,6 @@ headers:{
 "Content-Type":"application/json"
 
 },
-
 
 body:JSON.stringify({
 
@@ -304,23 +233,27 @@ type
 
 
 
-let data=await response.json();
+let data = await res.json();
 
 
 
 document.getElementById("market").innerText=data.market;
 
 
-document.getElementById("search").innerText=data.search;
+document.getElementById("keywords").innerText=
+data.keywords.join("\n");
 
 
-document.getElementById("channels").innerText=data.channels;
+document.getElementById("channels").innerText=
+data.channels;
 
 
-document.getElementById("strategy").innerText=data.strategy;
+document.getElementById("strategy").innerText=
+data.strategy;
 
 
-document.getElementById("mail").innerText=data.mail;
+document.getElementById("mail").innerText=
+data.mail;
 
 
 
@@ -335,11 +268,7 @@ html+=`
 
 <div class="customer">
 
-
-<h3>
-${item.company}
-</h3>
-
+<h3>${item.company}</h3>
 
 <p>
 国家：
@@ -354,7 +283,7 @@ ${item.type}
 
 
 <p>
-网站：
+官网：
 ${item.website}
 </p>
 
@@ -371,6 +300,12 @@ ${item.score}
 </p>
 
 
+<p>
+原因：
+${item.reason || ""}
+</p>
+
+
 </div>
 
 `;
@@ -378,6 +313,7 @@ ${item.score}
 
 
 });
+
 
 
 document.getElementById("leads").innerHTML=html;
