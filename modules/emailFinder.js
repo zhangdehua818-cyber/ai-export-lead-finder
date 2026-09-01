@@ -2,6 +2,41 @@ export async function findContact(company,country){
 
 
 
+let domain="";
+
+
+
+if(company.website){
+
+
+domain=
+
+company.website
+
+.replace(
+
+"https://",
+
+""
+
+)
+
+.replace(
+
+"http://",
+
+""
+
+)
+
+.split("/")[0];
+
+
+}
+
+
+
+
 return {
 
 
@@ -10,26 +45,24 @@ contactPerson:
 "Purchasing Manager",
 
 
-
 email:
 
-"待获取",
+`purchase@${domain}`,
 
+
+
+salesEmail:
+
+`sales@${domain}`,
 
 
 linkedin:
 
-"待获取",
-
-
-
-phone:
-
-"待获取",
-
+"待查询",
 
 
 country
+
 
 
 };
