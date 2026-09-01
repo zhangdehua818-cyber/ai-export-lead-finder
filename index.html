@@ -4,90 +4,64 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>AI Export Lead Finder V3</title>
-
+<title>AI Export Lead Finder V4</title>
 
 <style>
 
 body{
-
 font-family:Arial,"Microsoft YaHei";
-
 background:#f5f7fb;
-
 padding:30px;
-
 }
 
 
 .container{
-
 max-width:1000px;
-
 margin:auto;
-
 }
 
 
 .card{
 
 background:white;
-
 padding:30px;
-
 border-radius:20px;
-
-box-shadow:0 10px 30px #ddd;
-
 margin-bottom:25px;
+box-shadow:0 10px 30px #ddd;
 
 }
 
 
-
 h1{
-
 color:#2563eb;
-
 text-align:center;
-
 }
 
 
 input,select{
 
 width:100%;
-
 padding:15px;
-
-margin-top:10px;
-
-border-radius:10px;
-
+margin-top:12px;
 border:1px solid #ddd;
-
+border-radius:10px;
 font-size:16px;
 
 }
 
 
-
 button{
 
 width:100%;
-
 padding:15px;
-
 margin-top:20px;
 
 background:#2563eb;
-
 color:white;
 
-border:0;
-
+border:none;
 border-radius:10px;
 
 font-size:18px;
@@ -98,57 +72,32 @@ cursor:pointer;
 
 
 
-button:hover{
-
-background:#1d4ed8;
-
-}
-
-
-
-.result{
+.section{
 
 background:#f8fafc;
-
 padding:20px;
 
 border-radius:15px;
 
-margin-top:20px;
-
 white-space:pre-line;
+
+margin-top:15px;
 
 }
 
 
 
-.item{
+.customer{
 
 background:white;
+
+border-left:5px solid #2563eb;
 
 padding:20px;
 
 margin-top:15px;
 
-border-left:5px solid #2563eb;
-
 border-radius:10px;
-
-}
-
-
-
-.tag{
-
-display:inline-block;
-
-background:#dbeafe;
-
-padding:5px 10px;
-
-border-radius:20px;
-
-margin-right:10px;
 
 }
 
@@ -157,7 +106,6 @@ margin-right:10px;
 </style>
 
 </head>
-
 
 
 <body>
@@ -175,14 +123,13 @@ margin-right:10px;
 
 
 <p style="text-align:center">
-
-AI外贸客户开发助手 V3
-
+AI外贸客户开发助手 V4
 </p>
 
 
+
 <input id="product"
-placeholder="输入产品，例如：CNC加工件">
+placeholder="输入产品，例如：五金工具">
 
 
 <select id="country">
@@ -194,8 +141,6 @@ placeholder="输入产品，例如：CNC加工件">
 <option>UK</option>
 
 <option>Canada</option>
-
-<option>Australia</option>
 
 </select>
 
@@ -209,8 +154,6 @@ placeholder="输入产品，例如：CNC加工件">
 
 <option>经销商</option>
 
-<option>制造商</option>
-
 </select>
 
 
@@ -222,6 +165,7 @@ placeholder="输入产品，例如：CNC加工件">
 </button>
 
 
+
 </div>
 
 
@@ -230,17 +174,54 @@ placeholder="输入产品，例如：CNC加工件">
 <div class="card">
 
 <h2>
-📊 AI市场分析
+📊 市场分析
 </h2>
 
-
-<div id="analysis" class="result">
+<div id="market" class="section">
 
 等待分析...
 
 </div>
 
 
+<h2>
+🔎 搜索关键词
+</h2>
+
+<div id="search" class="section">
+
+</div>
+
+
+<h2>
+🌍 开发渠道
+</h2>
+
+<div id="channels" class="section">
+
+</div>
+
+
+
+<h2>
+🎯 客户开发策略
+</h2>
+
+<div id="strategy" class="section">
+
+</div>
+
+
+
+<h2>
+✉️ AI开发信
+</h2>
+
+<div id="mail" class="section">
+
+</div>
+
+
 </div>
 
 
@@ -249,7 +230,7 @@ placeholder="输入产品，例如：CNC加工件">
 <div class="card">
 
 <h2>
-🏢 潜在客户
+🏢 推荐客户
 </h2>
 
 
@@ -268,32 +249,28 @@ placeholder="输入产品，例如：CNC加工件">
 
 
 
-
-
 <script>
 
 
 async function searchLead(){
 
 
-let product=document.getElementById("product").value;
-
-let country=document.getElementById("country").value;
-
-let type=document.getElementById("type").value;
+let product=
+document.getElementById("product").value;
 
 
+let country=
+document.getElementById("country").value;
 
-document.getElementById("analysis").innerHTML=
-"AI正在分析市场，请稍候...";
 
-
-document.getElementById("leads").innerHTML=
-"正在匹配客户...";
+let type=
+document.getElementById("type").value;
 
 
 
-try{
+document.getElementById("market").innerText=
+"AI分析中...";
+
 
 
 let response=await fetch(
@@ -309,6 +286,7 @@ headers:{
 "Content-Type":"application/json"
 
 },
+
 
 body:JSON.stringify({
 
@@ -330,7 +308,19 @@ let data=await response.json();
 
 
 
-document.getElementById("analysis").innerText=data.analysis;
+document.getElementById("market").innerText=data.market;
+
+
+document.getElementById("search").innerText=data.search;
+
+
+document.getElementById("channels").innerText=data.channels;
+
+
+document.getElementById("strategy").innerText=data.strategy;
+
+
+document.getElementById("mail").innerText=data.mail;
 
 
 
@@ -338,112 +328,60 @@ let html="";
 
 
 
-data.leads.forEach((item,index)=>{
+data.leads.forEach(item=>{
 
 
 html+=`
 
-<div class="item">
+<div class="customer">
 
 
 <h3>
-
-${index+1}. ${item.company}
-
+${item.company}
 </h3>
 
 
-<span class="tag">
-
+<p>
+国家：
 ${item.country}
+</p>
 
-</span>
 
-
-<span class="tag">
-
+<p>
+类型：
 ${item.type}
-
-</span>
-
+</p>
 
 
 <p>
-
-官网：
-
+网站：
 ${item.website}
-
 </p>
 
 
-
 <p>
-
 邮箱：
-
 ${item.email}
-
 </p>
-
 
 
 <p>
-
 匹配度：
-
 ${item.score}
-
 </p>
-
-
-<button onclick="generateMail('${item.company}')">
-
-生成开发信
-
-</button>
 
 
 </div>
 
-
 `;
+
 
 
 });
 
 
-
 document.getElementById("leads").innerHTML=html;
 
-
-
-}
-
-catch(error){
-
-
-document.getElementById("analysis").innerText=
-
-"连接失败："+error.message;
-
-
-}
-
-
-
-}
-
-
-
-function generateMail(company){
-
-
-alert(
-
-"正在生成给 "+company+" 的英文开发信"
-
-);
 
 
 }
