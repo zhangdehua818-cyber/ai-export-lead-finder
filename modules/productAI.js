@@ -1,14 +1,9 @@
-// V6 产品分析模块
-
-
 export function analyzeProduct(product,country){
 
 
 return {
 
-
 product,
-
 
 country,
 
@@ -24,7 +19,6 @@ customerTypes:[
 ],
 
 
-
 keywords:[
 
 `${product} importer ${country}`,
@@ -36,19 +30,16 @@ keywords:[
 ],
 
 
-
-analysis:
+summary:
 
 `
-产品：
-${product}
-
-
 目标市场：
 ${country}
 
+产品：
+${product}
 
-推荐开发对象：
+推荐寻找：
 
 1. 进口商
 
@@ -56,14 +47,7 @@ ${country}
 
 3. 批发商
 
-
-重点：
-
-寻找有采购能力和渠道能力的企业。
-
 `
-
-
 
 };
 
