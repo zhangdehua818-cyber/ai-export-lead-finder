@@ -27,6 +27,8 @@ const COUNTRY_MAP = {
   "澳大利亚": "Australia",
   "日本": "Japan",
   "韩国": "South Korea",
+  "阿联酋": "the United Arab Emirates",
+  "沙特": "Saudi Arabia",
   "新加坡": "Singapore",
   "印度": "India",
   "墨西哥": "Mexico",
@@ -35,125 +37,159 @@ const COUNTRY_MAP = {
   "西班牙": "Spain"
 };
 
-function normalize(value) {
-  if (value === null || value === undefined) {
+function normalize(
+  value
+) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
   }
 
-  if (typeof value === "string") {
+  if (
+    typeof value === "string"
+  ) {
     return value.trim();
   }
 
-  if (typeof value === "object") {
+  if (
+    typeof value === "object"
+  ) {
     return (
-      value.name ||
       value.company ||
+      value.name ||
       value.title ||
       value.value ||
+      value.text ||
       ""
     ).toString().trim();
   }
 
-  return String(value).trim();
+  return String(
+    value
+  ).trim();
 }
 
-function productName(product) {
-  const value = normalize(product);
+function productName(
+  product
+) {
+  const value =
+    normalize(product);
 
-  return PRODUCT_MAP[value] || value || "our products";
+  return (
+    PRODUCT_MAP[value] ||
+    value
+  );
 }
 
-function countryName(country) {
-  const value = normalize(country);
+function countryName(
+  country
+) {
+  const value =
+    normalize(country);
 
-  return COUNTRY_MAP[value] || value || "your market";
+  return (
+    COUNTRY_MAP[value] ||
+    value
+  );
 }
 
-function companyName(company) {
-  const value = normalize(company);
-
-  if (!value) {
-    return "your company";
-  }
-
-  return value;
-}
-
-export function generateEmail(product, country, company) {
-  /*
-   * 同时兼容：
-   *
-   * generateEmail(product, country, company)
-   *
-   * 以及：
-   *
-   * generateEmail({
-   *   product,
-   *   country,
-   *   company
-   * })
-   */
-
-  let finalProduct = "";
-  let finalCountry = "";
-  let finalCompany = "";
+/*
+ * 支持多种调用方式：
+ *
+ * generateEmail(product, country, company)
+ *
+ * 也支持：
+ *
+ * generateEmail({
+ *   product,
+ *   country,
+ *   company
+ * })
+ */
+export function generateEmail(
+  product,
+  country,
+  company
+) {
+  let data = {};
 
   if (
     product &&
-    typeof product === "object" &&
-    !Array.isArray(product)
+    typeof product === "object"
   ) {
-    finalProduct =
-      product.product ||
-      product.productName ||
-      "";
-
-    finalCountry =
-      product.country ||
-      product.market ||
-      "";
-
-    finalCompany =
-      product.company ||
-      product.companyName ||
-      product.name ||
-      "";
+    data =
+      product;
   } else {
-    finalProduct = product;
-    finalCountry = country;
-    finalCompany =
-      typeof company === "object"
-        ? (
-            company.company ||
-            company.companyName ||
-            company.name ||
-            ""
-          )
-        : company;
+    data = {
+      product,
+      country,
+      company
+    };
   }
 
-  finalProduct = productName(finalProduct);
-  finalCountry = countryName(finalCountry);
-  finalCompany = companyName(finalCompany);
+  const finalProduct =
+    productName(
+      data.product
+    );
+
+  const finalCountry =
+    countryName(
+      data.country
+    );
+
+  let companyName =
+    normalize(
+      data.company
+    );
+
+  if (
+    !companyName
+  ) {
+    companyName =
+      "your company";
+  }
+
+  if (
+    !finalProduct
+  ) {
+    return [
+      `Subject: Business Cooperation Opportunity`,
+      "",
+      `Dear ${companyName} Team,`,
+      "",
+      "We are a manufacturer and exporter from China.",
+      "",
+      "We are looking to establish long-term cooperation with reliable partners in your market.",
+      "",
+      "If you are currently sourcing products from China, we would be happy to provide our product catalog, pricing and samples.",
+      "",
+      "Best regards,",
+      "Sales Team"
+    ].join("\n");
+  }
 
   const subject =
-    `${finalProduct} Supply & Cooperation Opportunity`;
+    `${finalProduct.replace(
+      /\b\w/g,
+      c => c.toUpperCase()
+    )} Sourcing Opportunity`;
 
-  const body = `
-Subject: ${subject}
-
-Dear ${finalCompany} Team,
-
-I came across your business while researching companies in ${finalCountry} working with ${finalProduct} and related products.
-
-We are a manufacturer and exporter from China specializing in ${finalProduct}. We can provide competitive pricing, product customization and stable supply for wholesalers, distributors and retailers.
-
-I would be happy to send you our product catalog, pricing and available customization options if you are currently sourcing ${finalProduct}.
-
-Best regards,
-Sales Team
-China
-`.trim();
-
-  return body;
+  return [
+    `Subject: ${subject}`,
+    "",
+    `Dear ${companyName} Team,`,
+    "",
+    `We are a manufacturer and exporter from China specializing in ${finalProduct}.`,
+    "",
+    `We are currently looking to build long-term cooperation with distributors, wholesalers and retailers in ${finalCountry}.`,
+    "",
+    `If your company is currently sourcing ${finalProduct} or considering new suppliers, we would be happy to provide our product catalog, pricing and samples.`,
+    "",
+    "Please let me know if this is relevant to your current purchasing needs.",
+    "",
+    "Best regards,",
+    "Sales Team"
+  ].join("\n");
 }
