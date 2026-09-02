@@ -1,278 +1,211 @@
 /*
- * AI外贸客户开发助手 V3.5
- * 客户质量评分引擎
- *
- * 评分不再简单根据关键词堆分。
- * 100分必须非常难拿。
+ * AI Export Lead Finder V3.5
+ * Real Buyer Scoring Engine
  */
 
-const BUYER_SIGNALS = [
-  "buyer",
-  "purchasing",
-  "procurement",
-  "sourcing",
-  "importer",
-  "distributor",
-  "distribution",
-  "wholesaler",
-  "wholesale",
-  "retailer",
-  "retail",
-  "reseller",
-  "bulk order",
-  "bulk orders",
-  "b2b",
-  "resale"
-];
-
-const STRONG_BUYER_SIGNALS = [
-  "purchasing",
-  "procurement",
-  "sourcing",
-  "importer",
-  "distributor",
-  "wholesaler",
-  "retailer",
-  "bulk orders"
-];
-
-const SUPPLIER_SIGNALS = [
-  "supplier",
-  "suppliers",
-  "manufacturer",
-  "manufacturing",
-  "factory",
-  "factory direct",
-  "oem manufacturer",
-  "contract manufacturer",
-  "manufacturing service",
-  "machining service",
-  "cnc machining"
-];
-
-const BAD_PAGE_SIGNALS = [
-  "buyer list",
-  "buyers list",
-  "importer list",
-  "supplier directory",
-  "b2b directory",
-  "buying leads",
-  "complete guide",
-  "ultimate guide",
-  "how to",
-  "blog",
-  "article",
-  "news",
-  "case study",
-  "freight",
-  "freight forwarding",
-  "shipping company",
-  "logistics",
-  "customs clearance"
-];
-
-function toText(value) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  if (typeof value === "object") {
-    return [
-      value.company,
-      value.companyName,
-      value.title,
-      value.description,
-      value.websiteTitle,
-      value.siteName,
-      value.websiteText,
-      value.type,
-      value.buyerEvidence
-    ]
-      .map(toText)
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  return String(value);
-}
-
-function countSignals(text, signals) {
-  const lower = text.toLowerCase();
-
-  return signals.filter(signal =>
-    lower.includes(signal)
-  ).length;
-}
-
 export function scoreCompany(company) {
-  if (!company) {
-    return 0;
-  }
 
-  const text = toText(company).toLowerCase();
+  const c = company || {};
 
-  let score = 45;
+  let score = 40;
+
 
   /*
-   * 1. 官网真实性
+   * 官网验证
    */
   if (
-    company.verified === true ||
-    company.websiteVerified === true
+    c.verified ||
+    c.websiteVerified
   ) {
     score += 10;
   } else {
-    score -= 15;
+    score -= 10;
   }
+
 
   /*
-   * 2. 买家信号
+   * 产品相关性
    */
-  const buyerCount = countSignals(
-    text,
-    BUYER_SIGNALS
-  );
+  const relevance =
+    Array.isArray(c.relevanceEvidence)
+      ? c.relevanceEvidence
+      : [];
 
-  const strongBuyerCount = countSignals(
-    text,
-    STRONG_BUYER_SIGNALS
-  );
-
-  if (buyerCount >= 1) {
+  if (relevance.length >= 3) {
+    score += 12;
+  } else if (relevance.length >= 1) {
     score += 8;
   }
 
-  if (buyerCount >= 2) {
-    score += 5;
-  }
-
-  if (strongBuyerCount >= 1) {
-    score += 10;
-  }
-
-  if (strongBuyerCount >= 2) {
-    score += 5;
-  }
 
   /*
-   * 3. 类型奖励
+   * 直接买家证据
    */
-  const type = String(company.type || "").toLowerCase();
+  const buyerEvidence =
+    Array.isArray(c.buyerEvidence)
+      ? c.buyerEvidence
+      : [];
 
-  if (type.includes("distributor")) {
-    score += 8;
-  }
-
-  if (type.includes("wholesaler")) {
-    score += 8;
-  }
-
-  if (type.includes("importer")) {
-    score += 8;
-  }
-
-  if (type.includes("retailer")) {
-    score += 7;
-  }
-
-  if (type.includes("buyer")) {
-    score += 5;
-  }
-
-  /*
-   * 4. 产品相关度
-   */
-  if (company.productRelevant === true) {
+  if (buyerEvidence.length >= 3) {
+    score += 22;
+  } else if (buyerEvidence.length === 2) {
+    score += 18;
+  } else if (buyerEvidence.length === 1) {
     score += 12;
   }
 
-  /*
-   * 5. 官网邮箱
-   */
-  if (company.email) {
-    const email = String(company.email).toLowerCase();
 
-    if (
-      email.includes("@") &&
-      !email.includes("example.com") &&
-      !email.includes("test.com")
-    ) {
-      score += 10;
-    }
+  /*
+   * 渠道型买家
+   */
+  const channelEvidence =
+    Array.isArray(c.channelEvidence)
+      ? c.channelEvidence
+      : [];
+
+  if (channelEvidence.length >= 3) {
+    score += 15;
+  } else if (channelEvidence.length === 2) {
+    score += 12;
+  } else if (channelEvidence.length === 1) {
+    score += 8;
   }
 
+
   /*
-   * 6. 买家证据
+   * 邮箱
+   */
+  if (c.email) {
+    score += 8;
+  }
+
+
+  /*
+   * 真实买家 + 邮箱 + 官网
    */
   if (
-    Array.isArray(company.buyerEvidence) &&
-    company.buyerEvidence.length > 0
+    c.email &&
+    c.verified &&
+    buyerEvidence.length > 0
   ) {
-    score += Math.min(
-      company.buyerEvidence.length * 2,
-      8
-    );
+    score += 5;
   }
+
 
   /*
-   * 7. 供应商扣分
+   * 供应商 / 制造商
    */
-  const supplierCount = countSignals(
-    text,
-    SUPPLIER_SIGNALS
-  );
+  const supplierEvidence =
+    Array.isArray(c.supplierEvidence)
+      ? c.supplierEvidence
+      : [];
 
-  if (supplierCount >= 1) {
-    score -= 20;
-  }
-
-  if (supplierCount >= 2) {
-    score -= 20;
-  }
-
-  /*
-   * 8. 垃圾页面扣分
-   */
-  const badPageCount = countSignals(
-    text,
-    BAD_PAGE_SIGNALS
-  );
-
-  if (badPageCount >= 1) {
+  if (
+    c.supplierStrong ||
+    c.pageType === "supplier"
+  ) {
+    score -= 45;
+  } else if (supplierEvidence.length >= 2) {
     score -= 25;
+  } else if (supplierEvidence.length === 1) {
+    score -= 10;
   }
 
-  if (badPageCount >= 2) {
-    score -= 20;
-  }
-
-  if (company.directory === true) {
-    score -= 40;
-  }
-
-  if (company.article === true) {
-    score -= 30;
-  }
-
-  if (company.logistics === true) {
-    score -= 40;
-  }
-
-  if (company.pageIsBad === true) {
-    score -= 30;
-  }
 
   /*
-   * 9. 不允许因为关键词太多直接刷到100。
+   * 下游经销商招募
    *
-   * 最高分：
-   * 真实官网 + 强买家 + 产品相关 + 邮箱
-   * 才有机会进入90+
+   * 例如：
+   * Become A Distributor
+   * Authorized Distributor
    */
-  score = Math.max(
-    0,
-    Math.min(100, Math.round(score))
-  );
+  if (c.downstreamRecruiter) {
+    score -= 40;
+  }
 
-  return score;
+
+  /*
+   * 目录 / 文章 / 物流
+   */
+  if (
+    c.pageType === "directory"
+  ) {
+    score -= 50;
+  }
+
+  if (
+    c.pageType === "article"
+  ) {
+    score -= 45;
+  }
+
+  if (
+    c.pageType === "logistics"
+  ) {
+    score -= 45;
+  }
+
+
+  /*
+   * 防止“卖家自己的购买按钮”
+   * 被误判成真正买家
+   */
+  const sellerEvidence =
+    Array.isArray(c.sellerEvidence)
+      ? c.sellerEvidence
+      : [];
+
+  if (
+    sellerEvidence.length >= 3 &&
+    buyerEvidence.length === 0
+  ) {
+    score -= 15;
+  }
+
+
+  /*
+   * 没有任何买家证据
+   *
+   * 渠道型企业仍可保留，
+   * 但不能获得过高分。
+   */
+  if (
+    buyerEvidence.length === 0 &&
+    channelEvidence.length === 0
+  ) {
+    score -= 15;
+  }
+
+
+  /*
+   * 如果只有渠道证据，
+   * 不允许轻易达到 90+
+   */
+  if (
+    buyerEvidence.length === 0 &&
+    channelEvidence.length > 0
+  ) {
+    score = Math.min(score, 85);
+  }
+
+
+  /*
+   * 没有直接采购证据的普通渠道商
+   * 不允许出现夸张的 95/100
+   */
+  if (
+    buyerEvidence.length === 0
+  ) {
+    score = Math.min(score, 85);
+  }
+
+
+  /*
+   * 最终范围
+   *
+   * V3.5 不再出现轻易 100 分的情况。
+   */
+  score = Math.max(0, Math.min(95, score));
+
+  return Math.round(score);
 }
