@@ -1,6 +1,7 @@
 {
   "name": "ai-export-lead-finder",
-  "version": "3.3.0",
+  "version": "3.5.0",
+  "description": "AI外贸客户开发助手",
   "type": "module",
   "scripts": {
     "start": "node server.mjs"
@@ -10,7 +11,6 @@
     "express": "^5.1.0",
     "sqlite3": "^5.1.7",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "openai": "^5.0.0"
+    "jsonwebtoken": "^9.0.2"
   }
 }
