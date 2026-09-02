@@ -1,13 +1,20 @@
 function text(value) {
-  if (value === null || value === undefined) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
   }
 
-  if (typeof value === "string") {
+  if (
+    typeof value === "string"
+  ) {
     return value;
   }
 
-  if (typeof value === "object") {
+  if (
+    typeof value === "object"
+  ) {
     return (
       value.name ||
       value.company ||
@@ -24,6 +31,7 @@ function text(value) {
 const BUYER_SIGNALS = [
   "importer",
   "import",
+  "importing",
   "distributor",
   "distribution",
   "wholesale",
@@ -40,6 +48,47 @@ const BUYER_SIGNALS = [
   "rfq",
   "request for quotation",
   "request a quote"
+];
+
+const ACTIVE_BUYING_SIGNALS = [
+  "looking for suppliers",
+  "looking for a supplier",
+  "looking for new suppliers",
+  "looking for manufacturers",
+  "looking for new manufacturers",
+  "seeking suppliers",
+  "seeking a supplier",
+  "seeking manufacturers",
+  "sourcing from",
+  "source from manufacturers",
+  "source from suppliers",
+  "we source",
+  "we are sourcing",
+  "currently sourcing",
+  "supplier sourcing",
+  "vendor sourcing",
+  "new supplier",
+  "new suppliers",
+  "supplier onboarding",
+  "vendor onboarding",
+  "become a vendor",
+  "vendor application",
+  "submit your products",
+  "submit products",
+  "vendor registration",
+  "purchase products",
+  "bulk purchase",
+  "bulk purchasing",
+  "bulk order",
+  "bulk orders",
+  "purchase in bulk",
+  "buy in bulk",
+  "we buy",
+  "we purchase",
+  "purchasing department",
+  "procurement department",
+  "purchasing team",
+  "procurement team"
 ];
 
 const SUPPLIER_SIGNALS = [
@@ -61,6 +110,7 @@ const REVERSE_SIGNALS = [
   "authorized distributor application",
   "distributor application",
   "distributor program",
+  "distributor requirements",
   "dealer application",
   "dealer program",
   "become a dealer",
@@ -69,14 +119,15 @@ const REVERSE_SIGNALS = [
   "reseller application",
   "buy our products",
   "buy from us",
+  "purchase our products",
   "our exclusive products",
   "minimum purchase requirement",
   "minimum purchase target",
   "minimum order quantity",
   "moq required",
   "apply to become",
-  "distributor requirements",
-  "dealer requirements"
+  "wholesale from us",
+  "open a wholesale account"
 ];
 
 const PRODUCT_SIGNALS = [
@@ -91,21 +142,31 @@ const PRODUCT_SIGNALS = [
   "cell phone accessories"
 ];
 
-function count(textValue, signals) {
+function count(
+  textValue,
+  signals
+) {
   const value =
-    text(textValue).toLowerCase();
+    text(textValue)
+      .toLowerCase();
 
   return signals.reduce(
     (total, signal) =>
       total +
-      (value.includes(signal)
-        ? 1
-        : 0),
+      (
+        value.includes(
+          signal
+        )
+          ? 1
+          : 0
+      ),
     0
   );
 }
 
-export function scoreCompany(company) {
+export function scoreCompany(
+  company
+) {
   if (!company) {
     return 0;
   }
@@ -114,17 +175,25 @@ export function scoreCompany(company) {
     company.company,
     company.description,
     company.type,
+    company.supplyRole,
     company.website,
     company.buyerEvidence,
+    company.reverseSellingEvidence,
     company.qualityReason
   ].join(" ");
 
-  let score = 40;
+  let score = 35;
 
   const buyerHits =
     count(
       combined,
       BUYER_SIGNALS
+    );
+
+  const activeHits =
+    count(
+      combined,
+      ACTIVE_BUYING_SIGNALS
     );
 
   const supplierHits =
@@ -149,16 +218,14 @@ export function scoreCompany(company) {
    * 官网
    */
   if (
-    company.verified === true ||
-    company.websiteVerified === true
+    company.websiteVerified === true ||
+    company.verified === true
   ) {
     score += 12;
-  } else {
-    score -= 15;
   }
 
   /*
-   * 产品
+   * 产品相关
    */
   if (
     company.productRelevant === true
@@ -167,58 +234,91 @@ export function scoreCompany(company) {
   } else if (
     productHits > 0
   ) {
-    score += 8;
+    score += 5;
   } else {
-    score -= 30;
+    score -= 35;
   }
 
   /*
-   * 买家信号
+   * 供应链角色
    */
-  if (buyerHits >= 1) {
-    score += Math.min(
-      buyerHits * 4,
-      20
-    );
-  }
-
-  /*
-   * 公司类型
-   */
-  const type =
-    text(company.type)
-      .toLowerCase();
+  const role =
+    text(
+      company.supplyRole ||
+      company.type
+    ).toLowerCase();
 
   if (
-    type.includes("importer")
+    role === "importer"
   ) {
-    score += 8;
+    score += 18;
   }
 
   if (
-    type.includes("distributor")
+    role === "buyer"
   ) {
-    score += 7;
+    score += 17;
   }
 
   if (
-    type.includes("wholesaler")
+    role === "distributor"
+  ) {
+    score += 10;
+  }
+
+  if (
+    role === "wholesaler"
+  ) {
+    score += 9;
+  }
+
+  if (
+    role === "retailer"
   ) {
     score += 6;
   }
 
+  /*
+   * 主动采购是核心加分项
+   */
   if (
-    type.includes("retailer")
+    activeHits >= 1
+  ) {
+    score += 12;
+  }
+
+  if (
+    activeHits >= 2
+  ) {
+    score += 8;
+  }
+
+  if (
+    activeHits >= 4
   ) {
     score += 5;
   }
 
   /*
-   * 企业邮箱
+   * 买家关键词只做辅助，
+   * 防止“Wholesale”一个词就冲到100分。
+   */
+  if (
+    buyerHits >= 1
+  ) {
+    score += Math.min(
+      buyerHits * 2,
+      10
+    );
+  }
+
+  /*
+   * 邮箱
    */
   const email =
-    text(company.email)
-      .toLowerCase();
+    text(
+      company.email
+    ).toLowerCase();
 
   if (
     email &&
@@ -227,59 +327,105 @@ export function scoreCompany(company) {
     ) &&
     !email.includes(
       "test.com"
+    ) &&
+    !email.includes(
+      "gmail.com"
+    ) &&
+    !email.includes(
+      "yahoo.com"
     )
   ) {
     score += 12;
+  } else if (
+    email
+  ) {
+    /*
+     * Gmail/Yahoo 仍然有价值，
+     * 但企业邮箱权重更高。
+     */
+    score += 6;
   }
 
   /*
-   * 供应商
+   * 供应商属性
    */
-  if (supplierHits >= 2) {
-    score -= 30;
-  }
-
-  if (supplierHits >= 4) {
+  if (
+    supplierHits >= 2
+  ) {
     score -= 20;
   }
 
+  if (
+    supplierHits >= 4
+  ) {
+    score -= 25;
+  }
+
   /*
-   * 反向招商：
-   * 这是最高级别的扣分。
+   * 反向招商
    */
-  if (reverseHits >= 1) {
+  if (
+    reverseHits >= 1
+  ) {
+    score -= 25;
+  }
+
+  if (
+    reverseHits >= 2
+  ) {
     score -= 35;
   }
 
-  if (reverseHits >= 2) {
-    score -= 30;
+  if (
+    reverseHits >= 4
+  ) {
+    score -= 25;
   }
 
   /*
-   * 如果 companySearch 已经确认，
-   * 仍然保留这层保险。
+   * 如果搜索引擎已经识别为厂家，
+   * 这里再做一道保险。
    */
   if (
-    Number(
-      company.reverseDistributionHits
-    ) >= 2
+    role === "manufacturer"
   ) {
-    score -= 50;
+    score -= 70;
+  }
+
+  if (
+    role === "supplier"
+  ) {
+    score -= 65;
   }
 
   /*
-   * 质量分只做轻微辅助，
-   * 防止搜索质量分直接把垃圾顶到90+。
+   * 绝对上限。
+   *
+   * 没有主动采购证据，
+   * 即使是批发商，也不允许轻易100分。
    */
   if (
-    typeof company.qualityScore ===
-      "number" &&
-    company.qualityScore > 0
+    activeHits === 0 &&
+    role !== "importer"
   ) {
-    score += Math.round(
-      (company.qualityScore - 50) *
-        0.1
+    score = Math.min(
+      score,
+      88
     );
+  }
+
+  /*
+   * 真正有主动采购信号，
+   * 才有机会进入90分以上。
+   */
+  if (
+    activeHits >= 1 &&
+    (
+      role === "importer" ||
+      role === "buyer"
+    )
+  ) {
+    score += 5;
   }
 
   return Math.max(
