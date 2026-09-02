@@ -1,15 +1,41 @@
-/**
- * V3.5 AI开发信生成器
- *
- * 当前没有付费AI API时：
- * 使用规则生成高质量英文开发信。
- *
- * 重要：
- * 绝不出现 [object Object]
- * 绝不把中文产品名直接塞进英文正文。
- */
+const PRODUCT_MAP = {
+  "手机壳": "phone cases",
+  "手机保护壳": "phone cases",
+  "手机配件": "mobile phone accessories",
+  "数据线": "charging cables",
+  "充电线": "charging cables",
+  "充电器": "phone chargers",
+  "耳机": "earphones",
+  "蓝牙耳机": "wireless earbuds",
+  "移动电源": "power banks",
+  "钢化膜": "tempered glass screen protectors",
+  "手机膜": "screen protectors",
+  "服装": "clothing",
+  "鞋": "shoes",
+  "箱包": "bags",
+  "玩具": "toys",
+  "家具": "furniture"
+};
 
-function safeString(value) {
+const COUNTRY_MAP = {
+  "美国": "the United States",
+  "美国市场": "the United States",
+  "英国": "the United Kingdom",
+  "德国": "Germany",
+  "法国": "France",
+  "加拿大": "Canada",
+  "澳大利亚": "Australia",
+  "日本": "Japan",
+  "韩国": "South Korea",
+  "新加坡": "Singapore",
+  "印度": "India",
+  "墨西哥": "Mexico",
+  "巴西": "Brazil",
+  "意大利": "Italy",
+  "西班牙": "Spain"
+};
+
+function normalize(value) {
   if (value === null || value === undefined) {
     return "";
   }
@@ -18,177 +44,116 @@ function safeString(value) {
     return value.trim();
   }
 
-  if (typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
-
   if (typeof value === "object") {
-    if (value.name) return safeString(value.name);
-    if (value.title) return safeString(value.title);
-    if (value.text) return safeString(value.text);
-    if (value.value) return safeString(value.value);
-
-    return "";
+    return (
+      value.name ||
+      value.company ||
+      value.title ||
+      value.value ||
+      ""
+    ).toString().trim();
   }
 
-  return "";
+  return String(value).trim();
 }
 
-function cleanProduct(product) {
-  let value = safeString(product);
+function productName(product) {
+  const value = normalize(product);
 
-  if (!value) {
-    return "mobile phone accessories";
-  }
-
-  const map = {
-    "手机壳": "phone cases",
-    "手机套": "phone cases",
-    "手机配件": "mobile phone accessories",
-    "手机膜": "phone screen protectors",
-    "充电器": "phone chargers",
-    "数据线": "charging cables",
-    "蓝牙耳机": "Bluetooth earphones",
-    "耳机": "earphones",
-    "充电宝": "power banks",
-    "移动电源": "power banks"
-  };
-
-  if (map[value]) {
-    return map[value];
-  }
-
-  return value;
+  return PRODUCT_MAP[value] || value || "our products";
 }
 
-function cleanCompany(company) {
-  const value = safeString(company);
+function countryName(country) {
+  const value = normalize(country);
+
+  return COUNTRY_MAP[value] || value || "your market";
+}
+
+function companyName(company) {
+  const value = normalize(company);
 
   if (!value) {
     return "your company";
   }
 
-  return value
-    .replace(/\[object Object\]/gi, "")
-    .replace(/\s+/g, " ")
-    .trim() || "your company";
+  return value;
 }
 
-function detectGreeting(customer) {
-  const type = safeString(customer.type).toLowerCase();
+export function generateEmail(product, country, company) {
+  /*
+   * 同时兼容：
+   *
+   * generateEmail(product, country, company)
+   *
+   * 以及：
+   *
+   * generateEmail({
+   *   product,
+   *   country,
+   *   company
+   * })
+   */
 
-  if (type === "retailer") {
-    return "Dear Purchasing Team,";
+  let finalProduct = "";
+  let finalCountry = "";
+  let finalCompany = "";
+
+  if (
+    product &&
+    typeof product === "object" &&
+    !Array.isArray(product)
+  ) {
+    finalProduct =
+      product.product ||
+      product.productName ||
+      "";
+
+    finalCountry =
+      product.country ||
+      product.market ||
+      "";
+
+    finalCompany =
+      product.company ||
+      product.companyName ||
+      product.name ||
+      "";
+  } else {
+    finalProduct = product;
+    finalCountry = country;
+    finalCompany =
+      typeof company === "object"
+        ? (
+            company.company ||
+            company.companyName ||
+            company.name ||
+            ""
+          )
+        : company;
   }
 
-  if (type === "distributor") {
-    return "Dear Purchasing Team,";
-  }
-
-  if (type === "importer") {
-    return "Dear Import Team,";
-  }
-
-  if (type === "wholesaler") {
-    return "Dear Purchasing Team,";
-  }
-
-  if (type === "brand") {
-    return "Dear Product Sourcing Team,";
-  }
-
-  return "Dear Purchasing Team,";
-}
-
-function cleanDescription(description) {
-  const value = safeString(description);
-
-  if (!value) return "";
-
-  return value
-    .replace(/\[object Object\]/gi, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .substring(0, 350);
-}
-
-export function generateEmail(product, customer) {
-  const productName = cleanProduct(product);
-
-  const company = cleanCompany(
-    customer?.company
-  );
-
-  const type = safeString(
-    customer?.type
-  );
-
-  const website = safeString(
-    customer?.website
-  );
-
-  const description = cleanDescription(
-    customer?.description
-  );
-
-  const greeting = detectGreeting(customer || {});
-
-  let relevanceSentence =
-    `We came across ${company} while researching companies in the ${productName} market.`;
-
-  if (type.toLowerCase() === "retailer") {
-    relevanceSentence =
-      `We noticed that ${company} operates in the retail market, and we believe our ${productName} could fit your product range.`;
-  }
-
-  if (type.toLowerCase() === "distributor") {
-    relevanceSentence =
-      `We noticed that ${company} is active in distribution, and we believe our ${productName} could be a good addition to your portfolio.`;
-  }
-
-  if (type.toLowerCase() === "importer") {
-    relevanceSentence =
-      `We noticed that ${company} is involved in importing products for the market, and we would like to introduce our ${productName}.`;
-  }
-
-  if (type.toLowerCase() === "wholesaler") {
-    relevanceSentence =
-      `We noticed that ${company} is active in wholesale distribution, and we would like to introduce our ${productName}.`;
-  }
-
-  if (type.toLowerCase() === "brand") {
-    relevanceSentence =
-      `We noticed that ${company} has a product brand in the market, and we would like to explore whether our ${productName} could support your sourcing needs.`;
-  }
+  finalProduct = productName(finalProduct);
+  finalCountry = countryName(finalCountry);
+  finalCompany = companyName(finalCompany);
 
   const subject =
-    `${productName
-      .replace(/\b\w/g, c => c.toUpperCase())} – Supply Opportunity`;
+    `${finalProduct} Supply & Cooperation Opportunity`;
 
-  const body = [
-    `Subject: ${subject}`,
-    "",
-    greeting,
-    "",
-    relevanceSentence,
-    "",
-    `We are a China-based manufacturer specializing in ${productName}. We can support OEM/ODM projects, custom packaging, and flexible order quantities depending on your requirements.`,
-    "",
-    "If you are currently sourcing this category, I would be happy to send you our product catalog, pricing, MOQ, and available customization options.",
-    "",
-    "Would you be open to taking a quick look at our product range?",
-    "",
-    "Best regards,",
-    "Sales Team",
-    "China"
-  ].join("\n");
+  const body = `
+Subject: ${subject}
 
-  return {
-    subject,
-    body,
-    company,
-    product: productName,
-    website,
-    description
-  };
+Dear ${finalCompany} Team,
+
+I came across your business while researching companies in ${finalCountry} working with ${finalProduct} and related products.
+
+We are a manufacturer and exporter from China specializing in ${finalProduct}. We can provide competitive pricing, product customization and stable supply for wholesalers, distributors and retailers.
+
+I would be happy to send you our product catalog, pricing and available customization options if you are currently sourcing ${finalProduct}.
+
+Best regards,
+Sales Team
+China
+`.trim();
+
+  return body;
 }
