@@ -1,45 +1,49 @@
+/*
+ * AI外贸客户开发助手 V3.5
+ * 外贸开发信生成器
+ *
+ * 重点：
+ * 绝不允许出现 [object Object]
+ */
+
 const PRODUCT_MAP = {
   "手机壳": "phone cases",
   "手机保护壳": "phone cases",
   "手机配件": "mobile phone accessories",
+  "充电宝": "power banks",
+  "移动电源": "power banks",
+  "蓝牙耳机": "Bluetooth earbuds",
+  "耳机": "earbuds",
   "数据线": "charging cables",
   "充电线": "charging cables",
-  "充电器": "phone chargers",
-  "耳机": "earphones",
-  "蓝牙耳机": "wireless earbuds",
-  "移动电源": "power banks",
   "钢化膜": "tempered glass screen protectors",
-  "手机膜": "screen protectors",
+  "保护膜": "screen protectors",
+  "背包": "backpacks",
+  "运动服": "sportswear",
   "服装": "clothing",
   "鞋": "shoes",
-  "箱包": "bags",
-  "玩具": "toys",
-  "家具": "furniture"
+  "玩具": "toys"
 };
 
 const COUNTRY_MAP = {
   "美国": "the United States",
   "美国市场": "the United States",
   "英国": "the United Kingdom",
-  "德国": "Germany",
-  "法国": "France",
   "加拿大": "Canada",
   "澳大利亚": "Australia",
+  "德国": "Germany",
+  "法国": "France",
+  "意大利": "Italy",
+  "西班牙": "Spain",
   "日本": "Japan",
   "韩国": "South Korea",
-  "阿联酋": "the United Arab Emirates",
-  "沙特": "Saudi Arabia",
   "新加坡": "Singapore",
   "印度": "India",
-  "墨西哥": "Mexico",
   "巴西": "Brazil",
-  "意大利": "Italy",
-  "西班牙": "Spain"
+  "墨西哥": "Mexico"
 };
 
-function normalize(
-  value
-) {
+function text(value) {
   if (
     value === null ||
     value === undefined
@@ -47,60 +51,83 @@ function normalize(
     return "";
   }
 
-  if (
-    typeof value === "string"
-  ) {
+  if (typeof value === "string") {
     return value.trim();
   }
 
-  if (
-    typeof value === "object"
-  ) {
-    return (
-      value.company ||
-      value.name ||
-      value.title ||
-      value.value ||
-      value.text ||
-      ""
-    ).toString().trim();
+  if (typeof value === "number") {
+    return String(value);
   }
 
-  return String(
-    value
-  ).trim();
+  if (typeof value === "object") {
+    if (value.name) {
+      return text(value.name);
+    }
+
+    if (value.company) {
+      return text(value.company);
+    }
+
+    if (value.companyName) {
+      return text(value.companyName);
+    }
+
+    if (value.title) {
+      return text(value.title);
+    }
+
+    if (value.value) {
+      return text(value.value);
+    }
+
+    return "";
+  }
+
+  return "";
 }
 
-function productName(
-  product
-) {
-  const value =
-    normalize(product);
+function normalizeProduct(product) {
+  const value = text(product);
 
-  return (
-    PRODUCT_MAP[value] ||
-    value
-  );
+  if (!value) {
+    return "our products";
+  }
+
+  if (PRODUCT_MAP[value]) {
+    return PRODUCT_MAP[value];
+  }
+
+  return value;
 }
 
-function countryName(
-  country
-) {
-  const value =
-    normalize(country);
+function normalizeCountry(country) {
+  const value = text(country);
 
-  return (
-    COUNTRY_MAP[value] ||
-    value
-  );
+  if (!value) {
+    return "your market";
+  }
+
+  if (COUNTRY_MAP[value]) {
+    return COUNTRY_MAP[value];
+  }
+
+  return value;
+}
+
+function normalizeCompany(company) {
+  const value = text(company);
+
+  if (!value) {
+    return "your company";
+  }
+
+  return value;
 }
 
 /*
  * 支持多种调用方式：
  *
  * generateEmail(product, country, company)
- *
- * 也支持：
  *
  * generateEmail({
  *   product,
@@ -109,87 +136,85 @@ function countryName(
  * })
  */
 export function generateEmail(
-  product,
+  productOrObject,
   country,
   company
 ) {
-  let data = {};
+  let product;
+  let targetCountry;
+  let companyName;
 
   if (
-    product &&
-    typeof product === "object"
+    productOrObject &&
+    typeof productOrObject === "object"
   ) {
-    data =
-      product;
-  } else {
-    data = {
-      product,
-      country,
-      company
-    };
-  }
+    product =
+      productOrObject.product ||
+      productOrObject.productName;
 
-  const finalProduct =
-    productName(
-      data.product
-    );
+    targetCountry =
+      productOrObject.country ||
+      productOrObject.targetCountry;
 
-  const finalCountry =
-    countryName(
-      data.country
-    );
-
-  let companyName =
-    normalize(
-      data.company
-    );
-
-  if (
-    !companyName
-  ) {
     companyName =
-      "your company";
+      productOrObject.company ||
+      productOrObject.companyName ||
+      productOrObject.name;
+  } else {
+    product = productOrObject;
+    targetCountry = country;
+    companyName = company;
   }
 
-  if (
-    !finalProduct
-  ) {
-    return [
-      `Subject: Business Cooperation Opportunity`,
-      "",
-      `Dear ${companyName} Team,`,
-      "",
-      "We are a manufacturer and exporter from China.",
-      "",
-      "We are looking to establish long-term cooperation with reliable partners in your market.",
-      "",
-      "If you are currently sourcing products from China, we would be happy to provide our product catalog, pricing and samples.",
-      "",
-      "Best regards,",
-      "Sales Team"
-    ].join("\n");
-  }
+  const productName = normalizeProduct(product);
+  const countryName = normalizeCountry(targetCountry);
+  const customerName = normalizeCompany(companyName);
+
+  /*
+   * 最终保险：
+   * 如果任何地方还传进来了对象，
+   * 绝不允许生成 [object Object]。
+   */
+  const safeProduct =
+    productName.includes("[object Object]")
+      ? "our products"
+      : productName;
+
+  const safeCountry =
+    countryName.includes("[object Object]")
+      ? "your market"
+      : countryName;
+
+  const safeCompany =
+    customerName.includes("[object Object]")
+      ? "your company"
+      : customerName;
 
   const subject =
-    `${finalProduct.replace(
-      /\b\w/g,
-      c => c.toUpperCase()
-    )} Sourcing Opportunity`;
+    `${safeProduct.replace(/\b\w/g, c => c.toUpperCase())} ` +
+    `Sourcing Opportunity`;
+
+  const body = [
+    `Dear Purchasing Team at ${safeCompany},`,
+    "",
+    `I am reaching out from a manufacturer in China specializing in ${safeProduct}.`,
+    "",
+    `We are currently looking to work with reliable wholesalers, distributors, retailers and sourcing partners in ${safeCountry}.`,
+    "",
+    `We can support OEM/ODM requirements, bulk orders and customized packaging depending on your needs.`,
+    "",
+    `If ${safeProduct} is part of your current product range, I would be happy to send you our catalog, pricing and MOQ information for review.`,
+    "",
+    `Would you be the right person to discuss new supplier opportunities?`,
+    "",
+    `Best regards,`,
+    `Sales Team`,
+    `China`
+  ].join("\n");
 
   return [
     `Subject: ${subject}`,
     "",
-    `Dear ${companyName} Team,`,
-    "",
-    `We are a manufacturer and exporter from China specializing in ${finalProduct}.`,
-    "",
-    `We are currently looking to build long-term cooperation with distributors, wholesalers and retailers in ${finalCountry}.`,
-    "",
-    `If your company is currently sourcing ${finalProduct} or considering new suppliers, we would be happy to provide our product catalog, pricing and samples.`,
-    "",
-    "Please let me know if this is relevant to your current purchasing needs.",
-    "",
-    "Best regards,",
-    "Sales Team"
+    body
   ].join("\n");
 }
