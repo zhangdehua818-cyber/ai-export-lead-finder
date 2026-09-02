@@ -4,17 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>AI外贸客户开发助手 V3.3</title>
+<title>AI外贸客户开发助手 V3.4</title>
 
 <style>
-
 *{
   box-sizing:border-box;
 }
 
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+  "Microsoft YaHei",Arial,sans-serif;
   background:#f5f7fb;
   color:#1f2937;
 }
@@ -98,6 +98,11 @@ button{
   font-size:15px;
   font-weight:600;
   cursor:pointer;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
 }
 
 .primary{
@@ -232,6 +237,12 @@ button{
   font-weight:normal;
 }
 
+.email-source{
+  margin-top:5px;
+  font-size:12px;
+  color:#9ca3af;
+}
+
 .email-text{
   margin-top:12px;
   padding:12px;
@@ -240,6 +251,22 @@ button{
   white-space:pre-wrap;
   line-height:1.6;
   font-size:14px;
+}
+
+.badge{
+  display:inline-block;
+  margin-top:10px;
+  margin-right:6px;
+  padding:4px 8px;
+  border-radius:7px;
+  font-size:12px;
+  background:#f3f4f6;
+  color:#6b7280;
+}
+
+.badge.verified{
+  background:#ecfdf5;
+  color:#047857;
 }
 
 .empty{
@@ -269,9 +296,7 @@ button{
   .customer-top{
     flex-direction:column;
   }
-
 }
-
 </style>
 </head>
 
@@ -279,28 +304,22 @@ button{
 
 <div class="container">
 
-  <!-- =========================
-       Header
-  ========================== -->
-
+  <!-- 顶部 -->
   <div class="header">
 
     <h1>
       AI外贸客户开发助手
-      <span class="version">V3.3</span>
+      <span class="version">V3.4</span>
     </h1>
 
     <p>
-      Tavily 海外搜索 · 潜在买家筛选 · 公司评分 · 客户开发
+      Tavily 海外搜索 · 真实买家筛选 · 企业官网验证 · 公开邮箱发现
     </p>
 
   </div>
 
 
-  <!-- =========================
-       登录注册
-  ========================== -->
-
+  <!-- 登录注册 -->
   <div class="card" id="authCard">
 
     <h2>账号登录</h2>
@@ -355,10 +374,7 @@ button{
   </div>
 
 
-  <!-- =========================
-       用户状态
-  ========================== -->
-
+  <!-- 用户 -->
   <div
     class="card hidden"
     id="userCard"
@@ -390,10 +406,7 @@ button{
   </div>
 
 
-  <!-- =========================
-       客户搜索
-  ========================== -->
-
+  <!-- 搜索 -->
   <div
     class="card hidden"
     id="searchCard"
@@ -449,10 +462,7 @@ button{
   </div>
 
 
-  <!-- =========================
-       搜索结果
-  ========================== -->
-
+  <!-- 结果 -->
   <div
     class="card hidden"
     id="resultCard"
@@ -465,9 +475,7 @@ button{
       class="result-count"
     ></div>
 
-    <div
-      id="results"
-    ></div>
+    <div id="results"></div>
 
   </div>
 
@@ -476,17 +484,9 @@ button{
 
 <script>
 
-/* =========================
-   API
-========================= */
-
 const API =
   "https://ai-export-lead-finder.onrender.com";
 
-
-/* =========================
-   本地状态
-========================= */
 
 let token =
   localStorage.getItem("ai_export_token") || "";
@@ -496,10 +496,6 @@ let currentUser =
     localStorage.getItem("ai_export_user") || "null"
   );
 
-
-/* =========================
-   页面初始化
-========================= */
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -520,32 +516,25 @@ document.addEventListener(
 
 
 /* =========================
-   状态提示
+   状态
 ========================= */
 
 function showStatus(
   elementId,
-  message,
-  show=true
+  message
 ){
 
   const element =
-    document.getElementById(elementId);
+    document.getElementById(
+      elementId
+    );
 
   if(!element) return;
 
   element.innerText =
     message || "";
 
-  if(show){
-
-    element.classList.add("show");
-
-  }else{
-
-    element.classList.remove("show");
-
-  }
+  element.classList.add("show");
 
 }
 
@@ -557,10 +546,15 @@ function showStatus(
 async function register(){
 
   const email =
-    document.getElementById("email").value.trim();
+    document
+      .getElementById("email")
+      .value
+      .trim();
 
   const password =
-    document.getElementById("password").value;
+    document
+      .getElementById("password")
+      .value;
 
   if(!email || !password){
 
@@ -602,7 +596,8 @@ async function register(){
     if(!response.ok || !data.success){
 
       throw new Error(
-        data.message || "注册失败"
+        data.message ||
+        "注册失败"
       );
 
     }
@@ -612,18 +607,19 @@ async function register(){
       data.user
     );
 
-    showStatus(
-      "authStatus",
-      "注册成功"
-    );
-
     showLoggedIn();
+
+    showStatus(
+      "searchStatus",
+      "注册成功，可以开始开发客户了"
+    );
 
   }catch(error){
 
     showStatus(
       "authStatus",
-      error.message || "注册失败"
+      error.message ||
+      "注册失败"
     );
 
   }
@@ -638,10 +634,15 @@ async function register(){
 async function login(){
 
   const email =
-    document.getElementById("email").value.trim();
+    document
+      .getElementById("email")
+      .value
+      .trim();
 
   const password =
-    document.getElementById("password").value;
+    document
+      .getElementById("password")
+      .value;
 
   if(!email || !password){
 
@@ -683,7 +684,8 @@ async function login(){
     if(!response.ok || !data.success){
 
       throw new Error(
-        data.message || "登录失败"
+        data.message ||
+        "登录失败"
       );
 
     }
@@ -693,18 +695,14 @@ async function login(){
       data.user
     );
 
-    showStatus(
-      "authStatus",
-      "登录成功"
-    );
-
     showLoggedIn();
 
   }catch(error){
 
     showStatus(
       "authStatus",
-      error.message || "登录失败"
+      error.message ||
+      "登录失败"
     );
 
   }
@@ -713,7 +711,7 @@ async function login(){
 
 
 /* =========================
-   保存登录状态
+   保存登录
 ========================= */
 
 function saveLogin(
@@ -734,14 +732,16 @@ function saveLogin(
 
   localStorage.setItem(
     "ai_export_user",
-    JSON.stringify(currentUser)
+    JSON.stringify(
+      currentUser
+    )
   );
 
 }
 
 
 /* =========================
-   登录后页面
+   登录后
 ========================= */
 
 function showLoggedIn(){
@@ -774,7 +774,7 @@ function showLoggedIn(){
 
 
 /* =========================
-   未登录页面
+   未登录
 ========================= */
 
 function showLoggedOut(){
@@ -795,7 +795,7 @@ function showLoggedOut(){
 
 
 /* =========================
-   退出登录
+   退出
 ========================= */
 
 function logout(){
@@ -822,7 +822,7 @@ function logout(){
 
 
 /* =========================
-   开始开发客户
+   搜索客户
 ========================= */
 
 async function findLeads(){
@@ -863,12 +863,12 @@ async function findLeads(){
 
   if(!token){
 
+    showLoggedOut();
+
     showStatus(
-      "searchStatus",
+      "authStatus",
       "登录状态已失效，请重新登录"
     );
-
-    showLoggedOut();
 
     return;
 
@@ -883,12 +883,14 @@ async function findLeads(){
   button.disabled = true;
 
   button.innerText =
-    "正在寻找海外客户...";
+    "正在开发客户...";
+
 
   showStatus(
     "searchStatus",
-    "正在搜索真实海外公司，请稍候..."
+    "正在通过 Tavily 搜索真实海外企业，请稍候..."
   );
+
 
   document
     .getElementById("resultCard")
@@ -897,9 +899,12 @@ async function findLeads(){
   document
     .getElementById("results")
     .innerHTML =
-      `<div class="loading">
-        正在通过 Tavily 搜索海外买家...
-      </div>`;
+      `
+      <div class="loading">
+        正在筛选真实买家，并验证企业网站...
+      </div>
+      `;
+
 
   try{
 
@@ -911,29 +916,36 @@ async function findLeads(){
 
           headers:{
             "Content-Type":"application/json",
+
             "Authorization":
               `Bearer ${token}`
           },
 
           body:JSON.stringify({
+
             product,
+
             country
+
           })
         }
       );
 
+
     const data =
       await response.json();
+
 
     if(response.status === 401){
 
       logout();
 
       throw new Error(
-        "登录已失效，请重新登录"
+        "登录状态已失效，请重新登录"
       );
 
     }
+
 
     if(!response.ok || !data.success){
 
@@ -945,47 +957,30 @@ async function findLeads(){
     }
 
 
-    /* =========================
-       更新用户数据
-    ========================= */
-
-    if(data.user){
-
-      currentUser =
-        data.user;
-
-      localStorage.setItem(
-        "ai_export_user",
-        JSON.stringify(currentUser)
-      );
-
-    }
-
-
-    /* =========================
-       显示结果
-    ========================= */
-
     renderResults(
       data.customers || []
     );
+
 
     showStatus(
       "searchStatus",
       `搜索完成，共找到 ${data.count || 0} 个潜在客户`
     );
 
+
   }catch(error){
 
     document
       .getElementById("results")
       .innerHTML =
-        `<div class="empty">
+        `
+        <div class="empty">
           ${escapeHtml(
             error.message ||
             "搜索失败"
           )}
-        </div>`;
+        </div>
+        `;
 
     showStatus(
       "searchStatus",
@@ -1006,10 +1001,12 @@ async function findLeads(){
 
 
 /* =========================
-   渲染客户
+   显示客户
 ========================= */
 
-function renderResults(customers){
+function renderResults(
+  customers
+){
 
   const container =
     document.getElementById(
@@ -1021,21 +1018,30 @@ function renderResults(customers){
       "resultCount"
     );
 
+
   count.innerText =
     `共找到 ${customers.length} 个潜在客户`;
+
 
   if(!customers.length){
 
     container.innerHTML =
-      `<div class="empty">
-        暂时没有找到符合条件的客户。
-        <br>
+      `
+      <div class="empty">
+
+        暂时没有找到符合条件的真实潜在买家。
+
+        <br><br>
+
         可以尝试更换产品关键词或目标国家。
-      </div>`;
+
+      </div>
+      `;
 
     return;
 
   }
+
 
   container.innerHTML =
     customers
@@ -1048,129 +1054,168 @@ function renderResults(customers){
           const email =
             customer.email || "";
 
-          const emailText =
-            customer.emailText || "";
+          const score =
+            Number(
+              customer.score || 0
+            );
+
 
           return `
 
-            <div class="customer">
+          <div class="customer">
 
-              <div class="customer-top">
+            <div class="customer-top">
 
-                <div>
+              <div>
 
-                  <h3>
-                    ${escapeHtml(
-                      customer.company ||
-                      `潜在客户 ${index + 1}`
-                    )}
-                  </h3>
+                <h3>
+                  ${escapeHtml(
+                    customer.company ||
+                    `潜在客户 ${index + 1}`
+                  )}
+                </h3>
 
-                  <div class="meta">
+                <div class="meta">
 
-                    国家：
-                    ${escapeHtml(
-                      customer.country || ""
-                    )}
+                  国家：
+                  ${escapeHtml(
+                    customer.country || ""
+                  )}
 
-                    <br>
+                  <br>
 
-                    类型：
-                    ${escapeHtml(
-                      customer.type ||
-                      "Potential Buyer"
-                    )}
+                  类型：
+                  ${escapeHtml(
+                    customer.type ||
+                    "Potential Buyer"
+                  )}
 
-                    <br>
+                  <br>
 
-                    来源：
-                    ${escapeHtml(
-                      customer.source ||
-                      "Tavily"
-                    )}
-
-                  </div>
-
-                </div>
-
-                <div class="score">
-
-                  ${Number(
-                    customer.score || 0
-                  )}分
+                  来源：
+                  ${escapeHtml(
+                    customer.source ||
+                    "Tavily"
+                  )}
 
                 </div>
 
               </div>
 
 
-              <div class="website">
+              <div class="score">
 
-                网站：
-
-                ${
-                  website
-                    ? `<a
-                        href="${escapeAttribute(website)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        ${escapeHtml(website)}
-                      </a>`
-                    : "未找到"
-                }
+                ${score}分
 
               </div>
 
-
-              <div class="email ${
-                email
-                  ? ""
-                  : "empty"
-              }">
-
-                邮箱：
-
-                ${
-                  email
-                    ? escapeHtml(email)
-                    : "暂未找到公开邮箱"
-                }
-
-              </div>
+            </div>
 
 
-              ${
-                customer.description
-                  ? `
-                    <div class="meta"
-                         style="margin-top:10px">
+            ${
+              customer.websiteVerified
+                ? `
+                  <span class="badge verified">
+                    ✓ 官网已验证
+                  </span>
+                `
+                : `
+                  <span class="badge">
+                    官网未验证
+                  </span>
+                `
+            }
 
-                      ${escapeHtml(
-                        customer.description
-                      )}
 
-                    </div>
-                  `
-                  : ""
-              }
+            <div class="website">
 
+              网站：
 
               ${
-                emailText
+                website
                   ? `
-                    <div class="email-text">
-
+                    <a
+                      href="${escapeAttribute(
+                        website
+                      )}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       ${escapeHtml(
-                        emailText
+                        website
                       )}
-
-                    </div>
+                    </a>
                   `
-                  : ""
+                  : "未找到"
               }
 
             </div>
+
+
+            <div class="email ${
+              email
+                ? ""
+                : "empty"
+            }">
+
+              邮箱：
+
+              ${
+                email
+                  ? escapeHtml(email)
+                  : "暂未找到公开邮箱"
+              }
+
+            </div>
+
+
+            ${
+              customer.emailSource
+                ? `
+                  <div class="email-source">
+
+                    邮箱来源：
+                    ${escapeHtml(
+                      customer.emailSource
+                    )}
+
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              customer.description
+                ? `
+                  <div
+                    class="meta"
+                    style="margin-top:10px"
+                  >
+                    ${escapeHtml(
+                      customer.description
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              customer.emailText
+                ? `
+                  <div class="email-text">
+
+                    ${escapeHtml(
+                      customer.emailText
+                    )}
+
+                  </div>
+                `
+                : ""
+            }
+
+          </div>
 
           `;
 
@@ -1182,10 +1227,12 @@ function renderResults(customers){
 
 
 /* =========================
-   HTML安全处理
+   安全处理
 ========================= */
 
-function escapeHtml(value){
+function escapeHtml(
+  value
+){
 
   return String(value || "")
     .replace(/&/g,"&amp;")
@@ -1196,7 +1243,10 @@ function escapeHtml(value){
 
 }
 
-function escapeAttribute(value){
+
+function escapeAttribute(
+  value
+){
 
   return String(value || "")
     .replace(/"/g,"%22")
