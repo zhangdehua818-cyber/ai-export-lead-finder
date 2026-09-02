@@ -1,79 +1,120 @@
-export function scoreCompany(company){
+const BUYER_SIGNALS = [
+  "procurement",
+  "purchasing",
+  "purchase",
+  "sourcing",
+  "outsourcing",
+  "rfq",
+  "request for quotation",
+  "request a quote",
+  "purchase order",
+  "buyer",
+  "importer",
+  "distributor",
+  "retailer",
+  "brand"
+];
 
+const SUPPLIER_SIGNALS = [
+  "supplier",
+  "factory direct",
+  "manufacturer of",
+  "manufacturer and supplier",
+  "cnc machining service",
+  "machining service",
+  "oem manufacturer",
+  "contract manufacturer",
+  "wholesale supplier"
+];
 
+export async function scoreCompany(
+  company
+) {
 
-let score=70;
+  if (!company) {
+    return 0;
+  }
 
+  const text = [
 
+    company.company || "",
 
-if(company.type==="Importer"){
+    company.description || "",
 
-score+=15;
+    company.website || "",
 
-}
+    company.keyword || ""
 
+  ]
+    .join(" ")
+    .toLowerCase();
 
+  let score =
+    Number(company.score) || 40;
 
-if(company.website){
+  /*
+   * 买家信号
+   */
+  for (
+    const signal of BUYER_SIGNALS
+  ) {
 
-score+=10;
+    if (
+      text.includes(signal)
+    ) {
 
-}
+      score += 4;
 
+    }
 
+  }
 
-if(company.country){
+  /*
+   * 供应商信号
+   */
+  for (
+    const signal of SUPPLIER_SIGNALS
+  ) {
 
-score+=5;
+    if (
+      text.includes(signal)
+    ) {
 
-}
+      score -= 7;
 
+    }
 
+  }
 
+  /*
+   * 官网已经验证
+   */
+  if (
+    company.websiteVerified
+  ) {
 
-let level="★★★☆☆";
+    score += 5;
 
+  }
 
+  /*
+   * 真实邮箱
+   */
+  if (
+    company.email &&
+    company.email.includes("@")
+  ) {
 
-if(score>=90){
+    score += 5;
 
-level="★★★★★";
+  }
 
-}
-
-else if(score>=80){
-
-level="★★★★☆";
-
-}
-
-
-
-return {
-
-
-score,
-
-
-level,
-
-
-reason:
-
-`
-客户类型：
-${company.type}
-
-匹配度：
-较高
-
-建议：
-优先开发
-
-`
-
-};
-
-
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(score)
+    )
+  );
 
 }
