@@ -42,27 +42,49 @@ const LOGISTICS_DOMAINS = [
   "bookairfreight.com"
 ];
 
-const SUPPLIER_SIGNALS = [
+/*
+ * 明确的供应商/生产商信号
+ */
+const MANUFACTURER_SIGNALS = [
   "manufacturer",
   "manufacturing",
   "factory",
   "factory direct",
-  "supplier",
-  "suppliers",
+  "production facility",
+  "our factory",
+  "we manufacture",
+  "we manufacture our",
+  "manufactured by us",
+  "made in our factory",
   "oem manufacturer",
   "original manufacturer",
-  "cnc machining",
-  "machining service",
   "contract manufacturer",
   "custom manufacturing",
-  "made in china",
-  "factory price",
-  "wholesale supplier"
+  "cnc machining",
+  "machining service"
 ];
 
+const SUPPLIER_SIGNALS = [
+  "supplier",
+  "suppliers",
+  "supplier of",
+  "leading supplier",
+  "wholesale supplier",
+  "direct supplier",
+  "product supplier",
+  "we supply",
+  "we provide products",
+  "factory price",
+  "wholesale prices"
+];
+
+/*
+ * 买家/渠道信号
+ */
 const BUYER_SIGNALS = [
   "importer",
   "import",
+  "importing",
   "distributor",
   "distribution",
   "wholesale",
@@ -83,45 +105,96 @@ const BUYER_SIGNALS = [
 ];
 
 /*
- * 这是本次升级最重要的一组信号：
- * 它们说明网站是在“招募下游”，
- * 而不是“寻找上游供应商”。
+ * “反向招商”：
+ * 网站不是在找供应商，而是在让别人买它的货/成为它的代理。
  */
-const REVERSE_DISTRIBUTION_SIGNALS = [
+const REVERSE_SELLING_SIGNALS = [
   "become a distributor",
   "become our distributor",
   "become an authorized distributor",
   "authorized distributor application",
   "distributor application",
   "distributor program",
+  "distributor requirements",
   "dealer application",
   "dealer program",
+  "dealer requirements",
   "become a dealer",
   "become an authorized dealer",
-  "reseller application",
   "become a reseller",
   "authorized reseller",
-  "wholesale from us",
+  "reseller application",
+  "reseller program",
   "buy our products",
   "buy from us",
   "purchase our products",
   "our products",
   "our exclusive products",
   "exclusive products",
+  "apply to become",
+  "apply to be a distributor",
+  "apply to become a distributor",
   "minimum purchase requirement",
   "minimum purchase target",
   "minimum order quantity",
   "moq required",
-  "apply to become",
-  "apply to be a distributor",
-  "apply to become a distributor",
-  "distributor requirements",
-  "distributor requirements below",
-  "wholesale prices",
-  "wholesale pricing",
-  "dealer requirements"
+  "wholesale from us",
+  "wholesale pricing from us",
+  "wholesale prices from us",
+  "open a wholesale account",
+  "wholesale account application"
 ];
 
+/*
+ * “主动采购”信号。
+ *
+ * 这些比单纯出现 wholesale / distributor 更有价值。
+ */
+const ACTIVE_BUYING_SIGNALS = [
+  "looking for suppliers",
+  "looking for a supplier",
+  "looking for new suppliers",
+  "looking for manufacturers",
+  "looking for new manufacturers",
+  "seeking suppliers",
+  "seeking a supplier",
+  "seeking manufacturers",
+  "sourcing from",
+  "source from manufacturers",
+  "source from suppliers",
+  "we source",
+  "we are sourcing",
+  "currently sourcing",
+  "supplier sourcing",
+  "vendor sourcing",
+  "new supplier",
+  "new suppliers",
+  "supplier onboarding",
+  "vendor onboarding",
+  "become a vendor",
+  "vendor application",
+  "submit your products",
+  "submit products",
+  "wholesale vendors",
+  "vendor registration",
+  "purchase products",
+  "bulk purchase",
+  "bulk purchasing",
+  "bulk order",
+  "bulk orders",
+  "purchase in bulk",
+  "buy in bulk",
+  "we buy",
+  "we purchase",
+  "purchasing department",
+  "procurement department",
+  "purchasing team",
+  "procurement team"
+];
+
+/*
+ * 产品页面/内容型页面
+ */
 const BAD_PAGE_WORDS = [
   "buyer list",
   "buyers list",
@@ -210,7 +283,9 @@ const PRODUCT_MAP = {
 };
 
 function normalizeText(value) {
-  if (value === null || value === undefined) return "";
+  if (value === null || value === undefined) {
+    return "";
+  }
 
   if (typeof value === "string") {
     return value;
@@ -232,11 +307,13 @@ function normalizeText(value) {
 
 function normalizeProduct(product) {
   const value = normalizeText(product).trim();
+
   return PRODUCT_MAP[value] || value;
 }
 
 function normalizeCountry(country) {
   const value = normalizeText(country).trim();
+
   return COUNTRY_MAP[value] || value;
 }
 
@@ -254,6 +331,7 @@ function getDomain(url) {
 function getOrigin(url) {
   try {
     const u = new URL(url);
+
     return `${u.protocol}//${u.hostname}`;
   } catch {
     return "";
@@ -261,24 +339,35 @@ function getOrigin(url) {
 }
 
 function isBlockedDomain(domain) {
-  if (!domain) return true;
+  if (!domain) {
+    return true;
+  }
 
   return (
     BLOCKED_DOMAINS.some(
-      d => domain === d || domain.endsWith("." + d)
+      d =>
+        domain === d ||
+        domain.endsWith("." + d)
     ) ||
     SOCIAL_DOMAINS.some(
-      d => domain === d || domain.endsWith("." + d)
+      d =>
+        domain === d ||
+        domain.endsWith("." + d)
     ) ||
     LOGISTICS_DOMAINS.some(
-      d => domain === d || domain.endsWith("." + d)
+      d =>
+        domain === d ||
+        domain.endsWith("." + d)
     )
   );
 }
 
 function pathLooksBad(url) {
   try {
-    const path = new URL(url).pathname.toLowerCase();
+    const path =
+      new URL(url)
+        .pathname
+        .toLowerCase();
 
     return BAD_PATH_WORDS.some(
       word => path.includes(word)
@@ -288,35 +377,43 @@ function pathLooksBad(url) {
   }
 }
 
-function countSignals(text, words) {
-  const lower = normalizeText(text).toLowerCase();
+function countSignals(text, signals) {
+  const lower =
+    normalizeText(text).toLowerCase();
 
-  return words.reduce(
-    (total, word) =>
+  return signals.reduce(
+    (total, signal) =>
       total +
-      (lower.includes(word.toLowerCase()) ? 1 : 0),
+      (
+        lower.includes(
+          signal.toLowerCase()
+        )
+          ? 1
+          : 0
+      ),
     0
   );
 }
 
-function hasReverseDistribution(text) {
-  const lower = normalizeText(text).toLowerCase();
+function findSignals(text, signals) {
+  const lower =
+    normalizeText(text).toLowerCase();
 
-  const hits = [];
-
-  for (const signal of REVERSE_DISTRIBUTION_SIGNALS) {
-    if (lower.includes(signal)) {
-      hits.push(signal);
-    }
-  }
-
-  return hits;
+  return signals.filter(
+    signal =>
+      lower.includes(
+        signal.toLowerCase()
+      )
+  );
 }
 
 function productRelevant(text, product) {
-  const lower = normalizeText(text).toLowerCase();
+  const lower =
+    normalizeText(text).toLowerCase();
 
-  const p = normalizeProduct(product).toLowerCase();
+  const p =
+    normalizeProduct(product)
+      .toLowerCase();
 
   const aliases = [
     p,
@@ -331,13 +428,16 @@ function productRelevant(text, product) {
       "mobile phone case",
       "mobile phone cases",
       "protective case",
+      "protective cases",
       "phone accessories",
       "mobile accessories",
       "cell phone accessories"
     );
   }
 
-  if (p === "mobile phone accessories") {
+  if (
+    p === "mobile phone accessories"
+  ) {
     aliases.push(
       "phone accessories",
       "mobile accessories",
@@ -348,12 +448,18 @@ function productRelevant(text, product) {
   }
 
   return aliases.some(
-    x => x && lower.includes(x)
+    x =>
+      x &&
+      lower.includes(x)
   );
 }
 
-function looksLikeBadPage(text, url = "") {
-  const lower = normalizeText(text).toLowerCase();
+function looksLikeBadPage(
+  text,
+  url = ""
+) {
+  const lower =
+    normalizeText(text).toLowerCase();
 
   if (pathLooksBad(url)) {
     return true;
@@ -361,7 +467,9 @@ function looksLikeBadPage(text, url = "") {
 
   let hits = 0;
 
-  for (const word of BAD_PAGE_WORDS) {
+  for (
+    const word of BAD_PAGE_WORDS
+  ) {
     if (lower.includes(word)) {
       hits++;
     }
@@ -371,16 +479,20 @@ function looksLikeBadPage(text, url = "") {
 }
 
 function extractTitle(html) {
-  const match = html.match(
-    /<title[^>]*>([\s\S]*?)<\/title>/i
-  );
+  const match =
+    html.match(
+      /<title[^>]*>([\s\S]*?)<\/title>/i
+    );
 
-  if (!match) return "";
+  if (!match) {
+    return "";
+  }
 
   return match[1]
     .replace(/\s+/g, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
     .trim();
 }
 
@@ -391,10 +503,16 @@ function extractSiteName(html) {
     /<meta[^>]+name=["']application-name["'][^>]+content=["']([^"']+)["']/i
   ];
 
-  for (const regex of patterns) {
-    const match = html.match(regex);
+  for (
+    const regex of patterns
+  ) {
+    const match =
+      html.match(regex);
 
-    if (match && match[1]) {
+    if (
+      match &&
+      match[1]
+    ) {
       return match[1].trim();
     }
   }
@@ -404,23 +522,57 @@ function extractSiteName(html) {
 
 function htmlToText(html) {
   return normalizeText(html)
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
-    .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/\s+/g, " ")
+    .replace(
+      /<script[\s\S]*?<\/script>/gi,
+      " "
+    )
+    .replace(
+      /<style[\s\S]*?<\/style>/gi,
+      " "
+    )
+    .replace(
+      /<noscript[\s\S]*?<\/noscript>/gi,
+      " "
+    )
+    .replace(
+      /<svg[\s\S]*?<\/svg>/gi,
+      " "
+    )
+    .replace(
+      /<[^>]+>/g,
+      " "
+    )
+    .replace(
+      /&nbsp;/gi,
+      " "
+    )
+    .replace(
+      /&amp;/gi,
+      "&"
+    )
+    .replace(
+      /&quot;/gi,
+      '"'
+    )
+    .replace(
+      /&#39;/gi,
+      "'"
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
     .trim();
 }
 
-function cleanCompanyName(name, domain) {
-  let value = normalizeText(name)
-    .replace(/\s+/g, " ")
-    .trim();
+function cleanCompanyName(
+  name,
+  domain
+) {
+  let value =
+    normalizeText(name)
+      .replace(/\s+/g, " ")
+      .trim();
 
   if (!value) {
     return domain
@@ -442,7 +594,8 @@ function cleanCompanyName(name, domain) {
     "buy hanfu online"
   ];
 
-  const lower = value.toLowerCase();
+  const lower =
+    value.toLowerCase();
 
   if (
     badNames.some(
@@ -461,10 +614,17 @@ function cleanCompanyName(name, domain) {
     " : "
   ];
 
-  for (const separator of separators) {
-    if (value.includes(separator)) {
+  for (
+    const separator
+    of separators
+  ) {
+    if (
+      value.includes(separator)
+    ) {
       const first =
-        value.split(separator)[0].trim();
+        value
+          .split(separator)[0]
+          .trim();
 
       if (
         first.length >= 2 &&
@@ -480,26 +640,32 @@ function cleanCompanyName(name, domain) {
 }
 
 async function fetchPage(url) {
-  if (!url) return null;
+  if (!url) {
+    return null;
+  }
 
   try {
     const controller =
       new AbortController();
 
-    const timer = setTimeout(
-      () => controller.abort(),
-      8000
-    );
+    const timer =
+      setTimeout(
+        () => controller.abort(),
+        8000
+      );
 
-    const response = await fetch(url, {
-      method: "GET",
-      redirect: "follow",
-      signal: controller.signal,
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; AI-Export-Lead-Finder/3.5.1)"
-      }
-    });
+    const response =
+      await fetch(url, {
+        method: "GET",
+        redirect: "follow",
+        signal:
+          controller.signal,
+
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; AI-Export-Lead-Finder/3.6)"
+        }
+      });
 
     clearTimeout(timer);
 
@@ -507,138 +673,348 @@ async function fetchPage(url) {
       return null;
     }
 
-    const html = await response.text();
+    const html =
+      await response.text();
 
     return {
       html,
       url: response.url,
-      status: response.status
+      status:
+        response.status
     };
   } catch {
     return null;
   }
 }
 
-function determineType(text) {
-  const lower =
-    normalizeText(text).toLowerCase();
+/*
+ * 判断供应链角色
+ */
+function determineSupplyRole(data) {
+  const {
+    manufacturerSignals,
+    supplierSignals,
+    buyerSignals,
+    activeBuyingSignals,
+    reverseSellingSignals,
+    text
+  } = data;
+
+  const manufacturer =
+    manufacturerSignals >= 2;
+
+  const supplier =
+    supplierSignals >= 2;
+
+  const activeBuyer =
+    activeBuyingSignals >= 1;
+
+  const reverseSeller =
+    reverseSellingSignals >= 2;
+
+  /*
+   * 生产/供应属性非常强，
+   * 并且没有明确主动采购行为。
+   */
+  if (
+    manufacturer &&
+    !activeBuyer
+  ) {
+    return "Manufacturer";
+  }
 
   if (
-    lower.includes("importer") ||
-    lower.includes("imports")
+    supplier &&
+    !activeBuyer &&
+    reverseSeller
+  ) {
+    return "Supplier";
+  }
+
+  /*
+   * 明确在招代理、让别人买自己的产品
+   */
+  if (
+    reverseSeller &&
+    !activeBuyer
+  ) {
+    return "Supplier";
+  }
+
+  /*
+   * 有主动采购行为
+   */
+  if (
+    activeBuyer &&
+    buyerSignals >= 1
+  ) {
+    return "Buyer";
+  }
+
+  /*
+   * 进口商
+   */
+  if (
+    buyerSignals >= 1 &&
+    text
+      .toLowerCase()
+      .includes("importer")
   ) {
     return "Importer";
   }
 
+  /*
+   * 渠道商
+   */
   if (
-    lower.includes("distributor") ||
-    lower.includes("distribution")
+    text
+      .toLowerCase()
+      .includes("distributor")
   ) {
     return "Distributor";
   }
 
   if (
-    lower.includes("wholesaler") ||
-    lower.includes("wholesale")
+    text
+      .toLowerCase()
+      .includes("wholesaler")
   ) {
     return "Wholesaler";
   }
 
   if (
-    lower.includes("retailer") ||
-    lower.includes("retail")
+    text
+      .toLowerCase()
+      .includes("wholesale")
+  ) {
+    return "Wholesaler";
+  }
+
+  if (
+    text
+      .toLowerCase()
+      .includes("retailer")
   ) {
     return "Retailer";
   }
 
   if (
-    lower.includes("buyer") ||
-    lower.includes("purchasing") ||
-    lower.includes("procurement")
+    buyerSignals >= 1
   ) {
-    return "Buyer";
+    return "Potential Buyer";
   }
 
-  return "Potential Buyer";
+  return "Unknown";
 }
 
 function calculateQuality(candidate) {
   let score = 35;
 
-  if (candidate.verified) {
-    score += 15;
-  } else {
-    score -= 15;
-  }
-
-  if (candidate.productRelevant) {
-    score += 15;
-  } else {
-    score -= 40;
-  }
-
-  if (candidate.buyerSignals > 0) {
-    score += Math.min(
-      candidate.buyerSignals * 5,
-      20
-    );
-  }
-
-  if (candidate.companyIdentity) {
-    score += 8;
-  }
-
-  if (candidate.email) {
-    score += 10;
+  /*
+   * 官网
+   */
+  if (
+    candidate.websiteVerified
+  ) {
+    score += 12;
   }
 
   /*
-   * 反向招商是最高优先级的淘汰条件
+   * 产品相关
    */
   if (
-    candidate.reverseDistributionHits >= 2
+    candidate.productRelevant
+  ) {
+    score += 15;
+  }
+
+  /*
+   * 买家角色
+   */
+  if (
+    candidate.supplyRole ===
+    "Importer"
+  ) {
+    score += 15;
+  }
+
+  if (
+    candidate.supplyRole ===
+    "Buyer"
+  ) {
+    score += 14;
+  }
+
+  if (
+    candidate.supplyRole ===
+    "Distributor"
+  ) {
+    score += 10;
+  }
+
+  if (
+    candidate.supplyRole ===
+    "Wholesaler"
+  ) {
+    score += 9;
+  }
+
+  if (
+    candidate.supplyRole ===
+    "Retailer"
+  ) {
+    score += 6;
+  }
+
+  /*
+   * 主动采购
+   */
+  if (
+    candidate.activeBuyingSignals >= 1
+  ) {
+    score += 12;
+  }
+
+  if (
+    candidate.activeBuyingSignals >= 3
+  ) {
+    score += 8;
+  }
+
+  /*
+   * 企业邮箱
+   */
+  if (
+    candidate.email
+  ) {
+    score += 12;
+  }
+
+  /*
+   * 供应商/厂家
+   */
+  if (
+    candidate.supplyRole ===
+    "Manufacturer"
   ) {
     score -= 60;
   }
 
   if (
-    candidate.reverseDistributionHits >= 4
+    candidate.supplyRole ===
+    "Supplier"
+  ) {
+    score -= 55;
+  }
+
+  /*
+   * 反向招商
+   */
+  if (
+    candidate.reverseSellingSignals >= 2
+  ) {
+    score -= 45;
+  }
+
+  if (
+    candidate.reverseSellingSignals >= 4
   ) {
     score -= 20;
   }
 
-  if (candidate.supplierSignals >= 3) {
-    score -= 45;
+  /*
+   * 产品相关性极低
+   */
+  if (
+    !candidate.productRelevant
+  ) {
+    score -= 50;
   }
 
   return Math.max(
     0,
-    Math.min(100, score)
+    Math.min(
+      100,
+      Math.round(score)
+    )
   );
 }
 
 function makeReason(candidate) {
   const reasons = [];
 
-  if (candidate.verified) {
-    reasons.push("官网可访问");
+  if (
+    candidate.supplyRole ===
+    "Importer"
+  ) {
+    reasons.push(
+      "进口商"
+    );
+  } else if (
+    candidate.supplyRole ===
+    "Buyer"
+  ) {
+    reasons.push(
+      "存在主动采购信号"
+    );
+  } else if (
+    candidate.supplyRole ===
+    "Distributor"
+  ) {
+    reasons.push(
+      "分销渠道"
+    );
+  } else if (
+    candidate.supplyRole ===
+    "Wholesaler"
+  ) {
+    reasons.push(
+      "批发渠道"
+    );
+  } else if (
+    candidate.supplyRole ===
+    "Retailer"
+  ) {
+    reasons.push(
+      "零售渠道"
+    );
   }
 
-  if (candidate.productRelevant) {
-    reasons.push("产品相关");
+  if (
+    candidate.productRelevant
+  ) {
+    reasons.push(
+      "产品相关"
+    );
   }
 
-  if (candidate.buyerSignals > 0) {
-    reasons.push("存在买家/渠道信号");
+  if (
+    candidate.websiteVerified
+  ) {
+    reasons.push(
+      "官网已验证"
+    );
   }
 
-  if (candidate.email) {
-    reasons.push("找到公开企业邮箱");
+  if (
+    candidate.activeBuyingSignals > 0
+  ) {
+    reasons.push(
+      "存在采购行为"
+    );
   }
 
-  return reasons.length
-    ? reasons.join(" · ")
-    : "需要人工确认";
+  if (
+    candidate.email
+  ) {
+    reasons.push(
+      "公开邮箱"
+    );
+  }
+
+  return reasons.join(
+    " · "
+  );
 }
 
 export async function searchCompanies(
@@ -646,7 +1022,8 @@ export async function searchCompanies(
   country
 ) {
   const rawProduct =
-    normalizeText(product).trim();
+    normalizeText(product)
+      .trim();
 
   const englishProduct =
     normalizeProduct(product);
@@ -654,61 +1031,93 @@ export async function searchCompanies(
   const market =
     normalizeCountry(country);
 
-  if (!rawProduct || !market) {
+  if (
+    !rawProduct ||
+    !market
+  ) {
     return [];
   }
 
+  /*
+   * 不再只搜索 distributor。
+   * 加入采购、批发、进口、零售等不同入口。
+   */
   const queries = [
+    `"${englishProduct}" ${market} importer company`,
     `"${englishProduct}" ${market} distributor company`,
     `"${englishProduct}" ${market} wholesaler company`,
     `"${englishProduct}" ${market} retailer company`,
-    `"${englishProduct}" ${market} importer company`,
-    `"${englishProduct}" ${market} purchasing procurement`,
-    `"${englishProduct}" ${market} wholesale buyer`,
-    `"${englishProduct}" ${market} phone accessories company`,
-    `"${englishProduct}" ${market} mobile accessories distributor`
+    `"${englishProduct}" ${market} purchasing`,
+    `"${englishProduct}" ${market} procurement`,
+    `"${englishProduct}" ${market} "looking for suppliers"`,
+    `"${englishProduct}" ${market} wholesale buyer`
   ];
 
   const candidates = [];
   const seen = new Set();
 
-  for (const query of queries) {
+  /*
+   * 第一轮：Tavily 搜索
+   */
+  for (
+    const query of queries
+  ) {
     try {
       const results =
         await webSearch(query);
 
-      if (!Array.isArray(results)) {
+      if (
+        !Array.isArray(results)
+      ) {
         continue;
       }
 
-      for (const item of results) {
+      for (
+        const item of results
+      ) {
         const url =
-          normalizeText(item.url).trim();
+          normalizeText(
+            item.url
+          ).trim();
 
-        if (!url) continue;
+        if (!url) {
+          continue;
+        }
 
         const domain =
           getDomain(url);
 
-        if (!domain) continue;
-
-        if (isBlockedDomain(domain)) {
+        if (!domain) {
           continue;
         }
 
-        if (pathLooksBad(url)) {
+        if (
+          isBlockedDomain(domain)
+        ) {
           continue;
         }
 
-        if (seen.has(domain)) {
+        if (
+          pathLooksBad(url)
+        ) {
+          continue;
+        }
+
+        if (
+          seen.has(domain)
+        ) {
           continue;
         }
 
         const title =
-          normalizeText(item.title);
+          normalizeText(
+            item.title
+          );
 
         const snippet =
-          normalizeText(item.snippet);
+          normalizeText(
+            item.snippet
+          );
 
         const initialText =
           `${title} ${snippet}`;
@@ -723,38 +1132,56 @@ export async function searchCompanies(
         }
 
         const reverseHits =
-          hasReverseDistribution(
-            initialText
-          );
-
-        /*
-         * 搜索结果本身已经出现明显
-         * “招代理/经销商”信号时，
-         * 如果没有很强的买家信号，
-         * 直接淘汰。
-         */
-        const initialBuyerSignals =
-          countSignals(
+          findSignals(
             initialText,
-            BUYER_SIGNALS
+            REVERSE_SELLING_SIGNALS
           );
 
-        if (
-          reverseHits.length >= 2 &&
-          initialBuyerSignals < 4
-        ) {
-          continue;
-        }
+        const activeHits =
+          findSignals(
+            initialText,
+            ACTIVE_BUYING_SIGNALS
+          );
 
-        const initialSupplierSignals =
-          countSignals(
+        const manufacturerHits =
+          findSignals(
+            initialText,
+            MANUFACTURER_SIGNALS
+          );
+
+        const supplierHits =
+          findSignals(
             initialText,
             SUPPLIER_SIGNALS
           );
 
+        const buyerHits =
+          findSignals(
+            initialText,
+            BUYER_SIGNALS
+          );
+
+        /*
+         * 搜索结果阶段就发现：
+         *
+         * 招代理 + 没有采购行为
+         *
+         * 直接不要。
+         */
         if (
-          initialSupplierSignals >= 3 &&
-          initialBuyerSignals < 3
+          reverseHits.length >= 2 &&
+          activeHits.length === 0
+        ) {
+          continue;
+        }
+
+        /*
+         * 明显制造商，同时没有采购信号
+         */
+        if (
+          manufacturerHits.length >= 3 &&
+          activeHits.length === 0 &&
+          buyerHits.length < 3
         ) {
           continue;
         }
@@ -767,8 +1194,10 @@ export async function searchCompanies(
           title,
           snippet,
           source:
-            item.source || "Tavily",
-          keyword: query
+            item.source ||
+            "Tavily",
+          keyword:
+            query
         });
       }
     } catch (error) {
@@ -780,22 +1209,29 @@ export async function searchCompanies(
     }
   }
 
-  const verifiedCandidates = [];
+  const finalCandidates = [];
 
   /*
-   * 检查真实官网
+   * 第二轮：
+   * 打开真正的官网进行判断。
    */
   for (
     const candidate
-    of candidates.slice(0, 30)
+    of candidates.slice(0, 35)
   ) {
     const origin =
-      getOrigin(candidate.url);
+      getOrigin(
+        candidate.url
+      );
 
-    if (!origin) continue;
+    if (!origin) {
+      continue;
+    }
 
     const homepage =
-      await fetchPage(origin);
+      await fetchPage(
+        origin
+      );
 
     if (!homepage) {
       continue;
@@ -818,27 +1254,43 @@ export async function searchCompanies(
       candidate.snippet,
       pageTitle,
       siteName,
-      homepageText.slice(0, 18000)
+      homepageText.slice(
+        0,
+        20000
+      )
     ].join(" ");
 
     const lower =
       combinedText.toLowerCase();
 
-    const reverseHits =
-      hasReverseDistribution(
-        combinedText
+    const manufacturerHits =
+      findSignals(
+        combinedText,
+        MANUFACTURER_SIGNALS
       );
 
-    const supplierSignals =
-      countSignals(
+    const supplierHits =
+      findSignals(
         combinedText,
         SUPPLIER_SIGNALS
       );
 
-    const buyerSignals =
-      countSignals(
+    const buyerHits =
+      findSignals(
         combinedText,
         BUYER_SIGNALS
+      );
+
+    const activeHits =
+      findSignals(
+        combinedText,
+        ACTIVE_BUYING_SIGNALS
+      );
+
+    const reverseHits =
+      findSignals(
+        combinedText,
+        REVERSE_SELLING_SIGNALS
       );
 
     const relevant =
@@ -853,6 +1305,9 @@ export async function searchCompanies(
         candidate.url
       );
 
+    /*
+     * 物流/货代/运输类公司直接淘汰
+     */
     const logistics =
       lower.includes(
         "freight forwarding"
@@ -871,57 +1326,104 @@ export async function searchCompanies(
       ) ||
       lower.includes(
         "cargo shipping"
+      ) ||
+      lower.includes(
+        "freight company"
       );
 
+    if (logistics) {
+      continue;
+    }
+
     /*
-     * ① 产品不相关
+     * 产品不相关直接淘汰
      */
     if (!relevant) {
       continue;
     }
 
     /*
-     * ② 文章/目录
+     * 文章/目录直接淘汰
      */
     if (badPage) {
       continue;
     }
 
     /*
-     * ③ 物流
-     */
-    if (logistics) {
-      continue;
-    }
-
-    /*
-     * ④ 明显供应商
+     * 供应商反向招商
      */
     if (
-      supplierSignals >= 3 &&
-      buyerSignals < 4
+      reverseHits.length >= 2 &&
+      activeHits.length === 0
     ) {
       continue;
     }
 
     /*
-     * ⑤ 最关键：
-     * 如果网站大量出现
-     * Become a Distributor /
-     * Distributor Application /
-     * Buy Our Products 等
-     * 说明它是供应方。
+     * 生产厂家
      */
     if (
-      reverseHits.length >= 2
+      manufacturerHits.length >= 3 &&
+      activeHits.length === 0 &&
+      buyerHits.length < 3
     ) {
       continue;
     }
 
     /*
-     * ⑥ 必须存在买家/渠道信号
+     * 供应商
      */
-    if (buyerSignals < 1) {
+    if (
+      supplierHits.length >= 3 &&
+      activeHits.length === 0 &&
+      buyerHits.length < 3
+    ) {
+      continue;
+    }
+
+    /*
+     * 至少有买家/渠道信号
+     */
+    if (
+      buyerHits.length === 0
+    ) {
+      continue;
+    }
+
+    /*
+     * 供应链角色
+     */
+    const supplyRole =
+      determineSupplyRole({
+        manufacturerSignals:
+          manufacturerHits.length,
+
+        supplierSignals:
+          supplierHits.length,
+
+        buyerSignals:
+          buyerHits.length,
+
+        activeBuyingSignals:
+          activeHits.length,
+
+        reverseSellingSignals:
+          reverseHits.length,
+
+        text:
+          combinedText
+      });
+
+    /*
+     * Manufacturer / Supplier
+     * 不进入最终客户池。
+     */
+    if (
+      supplyRole ===
+        "Manufacturer" ||
+      supplyRole ===
+        "Supplier"
+    ) {
       continue;
     }
 
@@ -937,43 +1439,20 @@ export async function searchCompanies(
       continue;
     }
 
-    /*
-     * 不允许公司名本身就是
-     * “Phone Case Buyer”
-     * 这种搜索结果标题。
-     */
-    const companyLower =
-      companyIdentity.toLowerCase();
-
-    if (
-      companyLower.includes(
-        "buyer list"
-      ) ||
-      companyLower.includes(
-        "importer list"
-      ) ||
-      companyLower.includes(
-        "complete guide"
-      ) ||
-      companyLower ===
-        "potential buyer"
-    ) {
-      continue;
-    }
-
-    const type =
-      determineType(combinedText);
-
     const result = {
       company:
         companyIdentity,
 
-      companyIdentity: true,
+      companyIdentity:
+        true,
 
       country:
         market,
 
-      type,
+      type:
+        supplyRole,
+
+      supplyRole,
 
       website:
         origin,
@@ -983,7 +1462,10 @@ export async function searchCompanies(
 
       description:
         candidate.snippet ||
-        homepageText.slice(0, 600),
+        homepageText.slice(
+          0,
+          700
+        ),
 
       keyword:
         candidate.keyword,
@@ -997,15 +1479,28 @@ export async function searchCompanies(
       productRelevant:
         true,
 
-      buyerSignals,
+      manufacturerSignals:
+        manufacturerHits.length,
 
-      supplierSignals,
+      supplierSignals:
+        supplierHits.length,
 
-      reverseDistributionHits:
+      buyerSignals:
+        buyerHits.length,
+
+      activeBuyingSignals:
+        activeHits.length,
+
+      reverseSellingSignals:
         reverseHits.length,
 
-      reverseDistributionEvidence:
-        reverseHits.slice(0, 5),
+      buyerEvidence:
+        activeHits
+          .slice(0, 8),
+
+      reverseSellingEvidence:
+        reverseHits
+          .slice(0, 8),
 
       pageType:
         "company",
@@ -1024,34 +1519,44 @@ export async function searchCompanies(
     };
 
     result.qualityScore =
-      calculateQuality(result);
+      calculateQuality(
+        result
+      );
 
     result.qualityReason =
-      makeReason(result);
+      makeReason(
+        result
+      );
 
+    /*
+     * 最低质量线
+     */
     if (
       result.qualityScore < 50
     ) {
       continue;
     }
 
-    verifiedCandidates.push(
+    finalCandidates.push(
       result
     );
   }
 
   /*
-   * 最终域名去重
+   * 域名去重
    */
   const unique = [];
-  const finalSeen = new Set();
+  const finalSeen =
+    new Set();
 
   for (
     const item
-    of verifiedCandidates
+    of finalCandidates
   ) {
     const domain =
-      getDomain(item.website);
+      getDomain(
+        item.website
+      );
 
     if (
       !domain ||
@@ -1065,11 +1570,52 @@ export async function searchCompanies(
     unique.push(item);
   }
 
+  /*
+   * 优先真正采购型客户
+   */
   unique.sort(
-    (a, b) =>
-      b.qualityScore -
-      a.qualityScore
+    (a, b) => {
+      if (
+        a.supplyRole ===
+          "Importer" &&
+        b.supplyRole !==
+          "Importer"
+      ) {
+        return -1;
+      }
+
+      if (
+        b.supplyRole ===
+          "Importer" &&
+        a.supplyRole !==
+          "Importer"
+      ) {
+        return 1;
+      }
+
+      if (
+        a.activeBuyingSignals >
+        b.activeBuyingSignals
+      ) {
+        return -1;
+      }
+
+      if (
+        b.activeBuyingSignals >
+        a.activeBuyingSignals
+      ) {
+        return 1;
+      }
+
+      return (
+        b.qualityScore -
+        a.qualityScore
+      );
+    }
   );
 
-  return unique.slice(0, 15);
+  return unique.slice(
+    0,
+    15
+  );
 }
