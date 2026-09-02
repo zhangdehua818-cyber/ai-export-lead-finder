@@ -1,5 +1,18 @@
 import { webSearch } from "./modules/searchAPI.js";
 
+/**
+ * AI外贸客户开发助手 V3.5
+ * 真实买家识别搜索引擎
+ *
+ * 核心原则：
+ * 1. 不把买家名单网站当客户
+ * 2. 不把供应商/工厂当客户
+ * 3. 不把物流公司当客户
+ * 4. 不把文章/博客当客户
+ * 5. 尽可能寻找真实企业官网
+ * 6. 宁可少，也不要垃圾客户
+ */
+
 const BLOCKED_DOMAINS = [
   "tradewheel.com",
   "alibaba.com",
@@ -8,551 +21,658 @@ const BLOCKED_DOMAINS = [
   "globalsources.com",
   "indiamart.com",
   "dhgate.com",
-  "1688.com",
-  "taobao.com",
-  "temu.com",
-  "amazon.com",
-  "ebay.com",
   "ec21.com",
   "tradeindia.com",
-  "go4worldbusiness.com",
   "europages.com",
   "kompass.com",
   "thomasnet.com",
   "yellowpages.com",
   "yelp.com",
   "facebook.com",
-  "linkedin.com",
   "instagram.com",
+  "linkedin.com",
   "youtube.com",
+  "tiktok.com",
   "reddit.com",
-  "wikipedia.org"
+  "pinterest.com",
+  "wikipedia.org",
+  "amazon.com",
+  "ebay.com",
+  "etsy.com",
+  "walmart.com"
 ];
 
-const DIRECTORY_WORDS = [
-  "buyers list",
-  "buyer list",
-  "buyers directory",
-  "buyer directory",
-  "importers list",
-  "importer list",
-  "supplier directory",
-  "supplier list",
-  "company directory",
-  "b2b directory",
-  "buy leads",
-  "buying leads",
-  "buy leads found",
-  "buyers and importers list"
-];
-
-const STRONG_BUYER_WORDS = [
-  "procurement",
-  "purchasing",
-  "purchase manager",
-  "purchasing manager",
-  "procurement manager",
-  "sourcing manager",
-  "sourcing",
-  "outsourcing",
-  "request for quotation",
-  "rfq",
-  "request a quote",
-  "purchase order",
-  "buying",
-  "buyer",
+const BLOCKED_PATH_WORDS = [
+  "buyers-list",
+  "buyer-list",
   "buyers",
-  "importer",
-  "importers"
-];
-
-const BUYER_WORDS = [
-  "distributor",
-  "distributors",
-  "dealer",
-  "dealers",
-  "retailer",
-  "retailers",
-  "brand",
-  "brands",
-  "wholesale",
-  "wholesaler",
-  "components",
-  "parts",
-  "equipment",
-  "systems",
-  "manufacturer",
-  "manufacturers",
-  "factory",
-  "factories"
+  "importers-list",
+  "importer-list",
+  "suppliers-list",
+  "supplier-list",
+  "supplier-directory",
+  "buyer-directory",
+  "b2b-directory",
+  "buying-leads",
+  "buying-lead",
+  "rfq-list",
+  "request-list"
 ];
 
 const SUPPLIER_WORDS = [
+  "manufacturer",
+  "manufacturing",
+  "factory",
   "supplier",
   "suppliers",
-  "supplier of",
-  "manufacturer of",
+  "wholesale supplier",
   "factory direct",
-  "factory",
-  "factories",
-  "cnc machining service",
-  "machining service",
-  "contract manufacturing service",
   "oem manufacturer",
-  "custom manufacturing service",
-  "wholesale supplier"
+  "odm manufacturer",
+  "cnc machining",
+  "machining service",
+  "contract manufacturer",
+  "production factory",
+  "custom manufacturer",
+  "made in china"
 ];
+
+const LOGISTICS_WORDS = [
+  "freight",
+  "freight forwarding",
+  "freight forwarder",
+  "shipping company",
+  "logistics",
+  "cargo",
+  "warehousing",
+  "customs broker",
+  "transportation",
+  "air freight",
+  "ocean freight"
+];
+
+const DIRECTORY_WORDS = [
+  "directory",
+  "buyers list",
+  "buyer list",
+  "supplier directory",
+  "company directory",
+  "importer list",
+  "buyers and importers",
+  "buying leads",
+  "rfq marketplace",
+  "marketplace"
+];
+
+const BUYER_WORDS = [
+  "retailer",
+  "retail",
+  "distributor",
+  "distributors",
+  "importer",
+  "importers",
+  "wholesaler",
+  "wholesale",
+  "buyer",
+  "buyers",
+  "purchasing",
+  "procurement",
+  "sourcing",
+  "purchase",
+  "purchase order",
+  "brand",
+  "ecommerce",
+  "e-commerce",
+  "online store",
+  "shop",
+  "stores",
+  "dealer",
+  "dealers",
+  "reseller",
+  "resellers"
+];
+
+const PRODUCT_BUYING_WORDS = [
+  "phone case",
+  "phone cases",
+  "mobile accessories",
+  "mobile phone accessories",
+  "cell phone accessories",
+  "smartphone accessories",
+  "phone accessories"
+];
+
+function normalizeUrl(url) {
+  if (!url) return "";
+
+  try {
+    let value = String(url).trim();
+
+    if (!/^https?:\/\//i.test(value)) {
+      value = "https://" + value;
+    }
+
+    const u = new URL(value);
+
+    return `${u.protocol}//${u.hostname}${u.pathname === "/" ? "" : u.pathname}`;
+  } catch {
+    return "";
+  }
+}
 
 function getDomain(url) {
   try {
-    return new URL(url)
-      .hostname
-      .replace(/^www\./, "")
+    return new URL(normalizeUrl(url)).hostname
+      .replace(/^www\./i, "")
       .toLowerCase();
   } catch {
     return "";
   }
 }
 
-function normalizeWebsite(url) {
-  try {
-    const u = new URL(url);
-    return `${u.protocol}//${u.hostname}`;
-  } catch {
-    return "";
-  }
-}
-
-function isBlockedDomain(url) {
+function domainBlocked(url) {
   const domain = getDomain(url);
 
   if (!domain) return true;
 
-  return BLOCKED_DOMAINS.some(blocked =>
-    domain === blocked ||
-    domain.endsWith("." + blocked)
-  );
+  return BLOCKED_DOMAINS.some(blocked => {
+    return domain === blocked || domain.endsWith("." + blocked);
+  });
 }
 
-function isDirectoryPage(item) {
-  const text = [
-    item.title || "",
-    item.snippet || "",
-    item.url || ""
-  ]
-    .join(" ")
-    .toLowerCase();
+function pathBlocked(url) {
+  const value = String(url || "").toLowerCase();
 
-  return DIRECTORY_WORDS.some(word =>
-    text.includes(word)
-  );
+  return BLOCKED_PATH_WORDS.some(word => value.includes(word));
 }
 
-function isLikelySupplier(item) {
+function containsAny(text, words) {
+  const value = String(text || "").toLowerCase();
 
-  const text = [
-    item.title || "",
-    item.snippet || "",
-    item.url || ""
-  ]
-    .join(" ")
-    .toLowerCase();
+  return words.some(word => value.includes(word));
+}
 
-  let supplierHits = 0;
+function looksLikeSupplier(text) {
+  return containsAny(text, SUPPLIER_WORDS);
+}
 
-  for (const word of SUPPLIER_WORDS) {
-    if (text.includes(word)) {
-      supplierHits++;
-    }
-  }
+function looksLikeLogistics(text) {
+  return containsAny(text, LOGISTICS_WORDS);
+}
 
-  let buyerHits = 0;
+function looksLikeDirectory(text) {
+  return containsAny(text, DIRECTORY_WORDS);
+}
 
-  for (const word of STRONG_BUYER_WORDS) {
-    if (text.includes(word)) {
-      buyerHits += 2;
-    }
-  }
+function buyerSignalCount(text) {
+  const value = String(text || "").toLowerCase();
+
+  let count = 0;
 
   for (const word of BUYER_WORDS) {
-    if (text.includes(word)) {
-      buyerHits++;
+    if (value.includes(word)) {
+      count++;
     }
   }
 
-  return supplierHits >= 2 && buyerHits < 3;
+  return count;
 }
 
-function calculateScore(item, product) {
+function productSignalCount(text, product) {
+  const value = String(text || "").toLowerCase();
 
-  const text = [
-    item.title || "",
-    item.snippet || "",
-    item.url || ""
-  ]
-    .join(" ")
-    .toLowerCase();
+  const p = String(product || "").toLowerCase();
 
-  let score = 45;
+  let count = 0;
 
-  // 产品匹配
-  if (
-    product &&
-    text.includes(product.toLowerCase())
-  ) {
-    score += 12;
+  if (p && value.includes(p)) {
+    count += 3;
   }
 
-  // 强采购信号
-  for (const word of STRONG_BUYER_WORDS) {
-    if (text.includes(word)) {
-      score += 7;
+  for (const word of PRODUCT_BUYING_WORDS) {
+    if (value.includes(word)) {
+      count++;
     }
   }
 
-  // 普通买家信号
-  for (const word of BUYER_WORDS) {
-    if (text.includes(word)) {
-      score += 3;
-    }
-  }
-
-  // 供应商信号
-  for (const word of SUPPLIER_WORDS) {
-    if (text.includes(word)) {
-      score -= 8;
-    }
-  }
-
-  // 官网常见企业信息
-  if (text.includes("about us")) {
-    score += 2;
-  }
-
-  if (text.includes("contact us")) {
-    score += 2;
-  }
-
-  if (text.includes("our company")) {
-    score += 2;
-  }
-
-  return Math.max(
-    0,
-    Math.min(100, score)
-  );
+  return count;
 }
 
-function companyName(item) {
+function isProbablyCompanyTitle(title) {
+  if (!title) return false;
 
-  const title =
-    item.title ||
-    "Potential Buyer";
+  const value = String(title).trim();
 
-  let name =
-    title
-      .replace(/\s*[-|–—]\s*.*$/, "")
-      .trim();
+  if (value.length < 2) return false;
 
-  const badNames = [
-    "buyers",
-    "importers",
-    "suppliers",
-    "company directory",
-    "b2b"
+  const badTitles = [
+    "potential buyer",
+    "complete guide",
+    "global phone case dealers",
+    "phone case buyer",
+    "phone case buyers",
+    "phone case importer",
+    "phone case importers",
+    "buyers and importers",
+    "buying leads",
+    "supplier list",
+    "buyer list",
+    "home",
+    "homepage",
+    "contact us",
+    "about us"
   ];
 
-  const lower =
-    name.toLowerCase();
+  const lower = value.toLowerCase();
+
+  if (badTitles.includes(lower)) {
+    return false;
+  }
 
   if (
-    badNames.some(word =>
-      lower.includes(word)
-    )
+    lower.includes("buyers list") ||
+    lower.includes("importers list") ||
+    lower.includes("supplier list") ||
+    lower.includes("complete guide") ||
+    lower.includes("connecting manufacturers")
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function cleanCompanyName(title, domain) {
+  if (isProbablyCompanyTitle(title)) {
+    let name = String(title)
+      .replace(/\s*\|\s*.*$/g, "")
+      .replace(/\s*-\s*Home.*$/gi, "")
+      .trim();
+
+    if (name.length > 80) {
+      name = name.substring(0, 80).trim();
+    }
+
+    return name;
+  }
+
+  if (domain) {
+    const first = domain.split(".")[0];
+
+    return first
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  return "";
+}
+
+async function verifyWebsite(url) {
+  const cleanUrl = normalizeUrl(url);
+
+  if (!cleanUrl) {
+    return {
+      verified: false,
+      title: "",
+      text: ""
+    };
+  }
+
+  try {
+    const controller = new AbortController();
+
+    const timer = setTimeout(() => {
+      controller.abort();
+    }, 7000);
+
+    const response = await fetch(cleanUrl, {
+      method: "GET",
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; AI-Export-Lead-Finder/3.5)"
+      }
+    });
+
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      return {
+        verified: false,
+        title: "",
+        text: ""
+      };
+    }
+
+    const html = await response.text();
+
+    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+
+    const title = titleMatch
+      ? titleMatch[1]
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+      : "";
+
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .substring(0, 15000);
+
+    return {
+      verified: true,
+      title,
+      text
+    };
+  } catch {
+    return {
+      verified: false,
+      title: "",
+      text: ""
+    };
+  }
+}
+
+function buildSearchQueries(product, country) {
+  return [
+    `"${product}" "${country}" retailer`,
+    `"${product}" "${country}" distributor`,
+    `"${product}" "${country}" importer`,
+    `"${product}" "${country}" wholesaler`,
+    `"${product}" "${country}" "mobile accessories" company`,
+    `"${product}" "${country}" "phone accessories" retailer`,
+    `"${product}" "${country}" purchasing`,
+    `"${product}" "${country}" procurement`,
+    `"${product}" "${country}" sourcing`,
+    `"${product}" "${country}" "request for quotation"`
+  ];
+}
+
+function candidateQuality(candidate, product) {
+  const combined = [
+    candidate.title,
+    candidate.description,
+    candidate.url,
+    candidate.verifiedTitle,
+    candidate.verifiedText
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (!candidate.url) return -100;
+
+  if (domainBlocked(candidate.url)) {
+    return -100;
+  }
+
+  if (pathBlocked(candidate.url)) {
+    return -100;
+  }
+
+  if (looksLikeDirectory(combined)) {
+    return -80;
+  }
+
+  if (looksLikeLogistics(combined)) {
+    return -80;
+  }
+
+  let score = 0;
+
+  const buyerSignals = buyerSignalCount(combined);
+
+  const productSignals = productSignalCount(combined, product);
+
+  score += Math.min(buyerSignals * 12, 48);
+
+  score += Math.min(productSignals * 8, 32);
+
+  if (candidate.verified) {
+    score += 10;
+  }
+
+  if (candidate.email) {
+    score += 8;
+  }
+
+  if (
+    combined.includes("contact") ||
+    combined.includes("sales") ||
+    combined.includes("purchase")
+  ) {
+    score += 5;
+  }
+
+  if (looksLikeSupplier(combined)) {
+    score -= 65;
+  }
+
+  if (
+    combined.includes("manufacturer") &&
+    !combined.includes("retailer") &&
+    !combined.includes("distributor") &&
+    !combined.includes("importer")
+  ) {
+    score -= 50;
+  }
+
+  return score;
+}
+
+function detectCompanyType(candidate) {
+  const combined = [
+    candidate.title,
+    candidate.description,
+    candidate.verifiedTitle,
+    candidate.verifiedText
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (looksLikeLogistics(combined)) {
+    return "";
+  }
+
+  if (looksLikeSupplier(combined)) {
+    const hasBuyer =
+      combined.includes("retailer") ||
+      combined.includes("distributor") ||
+      combined.includes("importer") ||
+      combined.includes("wholesaler");
+
+    if (!hasBuyer) {
+      return "";
+    }
+  }
+
+  if (
+    combined.includes("retailer") ||
+    combined.includes("retail") ||
+    combined.includes("online store") ||
+    combined.includes("e-commerce")
+  ) {
+    return "Retailer";
+  }
+
+  if (
+    combined.includes("distributor") ||
+    combined.includes("dealer")
+  ) {
+    return "Distributor";
+  }
+
+  if (
+    combined.includes("importer") ||
+    combined.includes("importers")
+  ) {
+    return "Importer";
+  }
+
+  if (
+    combined.includes("wholesaler") ||
+    combined.includes("wholesale")
+  ) {
+    return "Wholesaler";
+  }
+
+  if (
+    combined.includes("brand")
+  ) {
+    return "Brand";
+  }
+
+  if (
+    combined.includes("purchasing") ||
+    combined.includes("procurement") ||
+    combined.includes("sourcing")
   ) {
     return "Potential Buyer";
   }
 
-  return name.slice(0, 150);
+  return "Potential Buyer";
 }
 
-async function verifyWebsite(url) {
+export async function searchCompanies(product, country) {
+  const queries = buildSearchQueries(product, country);
 
-  if (!url) {
-    return {
-      verified: false,
-      status: null
-    };
-  }
-
-  const controller =
-    new AbortController();
-
-  const timeout =
-    setTimeout(
-      () => controller.abort(),
-      5000
-    );
-
-  try {
-
-    const response =
-      await fetch(url, {
-        method: "GET",
-        redirect: "follow",
-        signal: controller.signal,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 AI-Export-Lead-Finder/3.4"
-        }
-      });
-
-    clearTimeout(timeout);
-
-    return {
-      verified:
-        response.status >= 200 &&
-        response.status < 500,
-
-      status:
-        response.status
-    };
-
-  } catch {
-
-    clearTimeout(timeout);
-
-    return {
-      verified: false,
-      status: null
-    };
-
-  }
-}
-
-export async function searchCompanies(
-  product,
-  country
-) {
-
-  if (!product || !country) {
-    throw new Error(
-      "产品和目标国家不能为空"
-    );
-  }
-
-  /*
-   * 不再只搜索“buyer list”
-   * 而是从不同采购意图寻找真实企业
-   */
-
-  const queries = [
-
-    `"${product}" ${country} retailer company`,
-
-    `"${product}" ${country} distributor company`,
-
-    `"${product}" ${country} importer company`,
-
-    `"${product}" ${country} purchasing procurement`,
-
-    `"${product}" ${country} sourcing purchasing`,
-
-    `"${product}" ${country} "request for quotation"`,
-
-    `${product} ${country} brand company`,
-
-    `${product} ${country} wholesale company`
-
-  ];
-
-  const allResults = [];
+  const rawCandidates = [];
 
   for (const query of queries) {
-
     try {
+      const results = await webSearch(query);
 
-      const results =
-        await webSearch(query);
-
-      for (const item of results) {
-
-        if (!item.url) {
-          continue;
-        }
-
-        if (isBlockedDomain(item.url)) {
-          continue;
-        }
-
-        if (isDirectoryPage(item)) {
-          continue;
-        }
-
-        if (isLikelySupplier(item)) {
-          continue;
-        }
-
-        const website =
-          normalizeWebsite(item.url);
-
-        if (!website) {
-          continue;
-        }
-
-        const domain =
-          getDomain(website);
-
-        if (!domain) {
-          continue;
-        }
-
-        const score =
-          calculateScore(
-            item,
-            product
-          );
-
-        /*
-         * 分数太低的结果直接不要
-         */
-        if (score < 45) {
-          continue;
-        }
-
-        allResults.push({
-
-          company:
-            companyName(item),
-
-          country,
-
-          type:
-            "Potential Buyer",
-
-          website,
-
-          email: "",
-
-          description:
-            item.snippet || "",
-
-          source:
-            item.source || "Tavily",
-
-          keyword:
-            query,
-
-          score,
-
-          websiteVerified: false,
-
-          verificationStatus:
-            "checking"
-
-        });
-
+      if (!Array.isArray(results)) {
+        continue;
       }
 
+      for (const item of results) {
+        if (!item) continue;
+
+        const url = normalizeUrl(item.url || item.link);
+
+        if (!url) continue;
+
+        if (domainBlocked(url)) continue;
+
+        if (pathBlocked(url)) continue;
+
+        rawCandidates.push({
+          title: item.title || "",
+          description: item.snippet || item.description || "",
+          url,
+          source: "Tavily",
+          keyword: query
+        });
+      }
     } catch (error) {
-
-      console.error(
-        `Tavily搜索失败: ${query}`,
-        error.message
-      );
-
+      console.error("Search query failed:", query, error.message);
     }
-
   }
 
-  /*
-   * 网站域名去重
-   */
-  const unique =
-    new Map();
+  // 按域名去重
+  const domainMap = new Map();
 
-  for (const company of allResults) {
+  for (const candidate of rawCandidates) {
+    const domain = getDomain(candidate.url);
 
-    const domain =
-      getDomain(
-        company.website
-      );
+    if (!domain) continue;
 
-    const old =
-      unique.get(domain);
+    if (!domainMap.has(domain)) {
+      domainMap.set(domain, candidate);
+    } else {
+      const existing = domainMap.get(domain);
 
-    if (
-      !old ||
-      company.score > old.score
-    ) {
+      const oldText =
+        `${existing.title} ${existing.description}`.length;
 
-      unique.set(
-        domain,
-        company
-      );
+      const newText =
+        `${candidate.title} ${candidate.description}`.length;
 
+      if (newText > oldText) {
+        domainMap.set(domain, candidate);
+      }
     }
-
   }
 
-  let companies =
-    Array.from(
-      unique.values()
+  let candidates = Array.from(domainMap.values());
+
+  // 第一轮粗筛
+  candidates = candidates.filter(candidate => {
+    const text = [
+      candidate.title,
+      candidate.description,
+      candidate.url
+    ].join(" ");
+
+    if (looksLikeLogistics(text)) return false;
+
+    if (looksLikeDirectory(text)) return false;
+
+    if (pathBlocked(candidate.url)) return false;
+
+    return true;
+  });
+
+  // 最多验证前 40 个
+  candidates = candidates.slice(0, 40);
+
+  const verifiedCandidates = [];
+
+  for (const candidate of candidates) {
+    const verified = await verifyWebsite(candidate.url);
+
+    const merged = {
+      ...candidate,
+      verified: verified.verified,
+      verifiedTitle: verified.title,
+      verifiedText: verified.text
+    };
+
+    const quality = candidateQuality(merged, product);
+
+    if (quality < 25) {
+      continue;
+    }
+
+    const company = cleanCompanyName(
+      verified.title || candidate.title,
+      getDomain(candidate.url)
     );
 
-  /*
-   * 优先验证高分企业
-   * 最多验证前20个
-   */
-  companies.sort(
-    (a, b) =>
-      b.score - a.score
-  );
+    if (!company) continue;
 
-  const verificationTargets =
-    companies.slice(0, 20);
+    const type = detectCompanyType(merged);
 
-  for (
-    const company of verificationTargets
-  ) {
+    if (!type) continue;
 
-    const verification =
-      await verifyWebsite(
-        company.website
-      );
-
-    company.websiteVerified =
-      verification.verified;
-
-    company.verificationStatus =
-      verification.verified
-        ? "verified"
-        : "unverified";
-
-    if (verification.verified) {
-      company.score = Math.min(
-        100,
-        company.score + 5
-      );
-    } else {
-      company.score = Math.max(
-        0,
-        company.score - 8
-      );
-    }
-
+    verifiedCandidates.push({
+      company,
+      country,
+      type,
+      website: candidate.url,
+      description:
+        verified.text.substring(0, 800) ||
+        candidate.description ||
+        "",
+      source: "Tavily",
+      keyword: candidate.keyword,
+      verified: verified.verified,
+      searchQuality: quality
+    });
   }
 
-  /*
-   * 最终排序
-   */
-  companies.sort(
-    (a, b) =>
-      b.score - a.score
+  // 按质量排序
+  verifiedCandidates.sort(
+    (a, b) => b.searchQuality - a.searchQuality
   );
 
-  /*
-   * 最终最多30个
-   */
-  return companies.slice(0, 30);
+  // 最终最多 20 个
+  return verifiedCandidates.slice(0, 20);
 }
