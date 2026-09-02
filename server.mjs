@@ -10,7 +10,8 @@ import {
 
 import {
   createUser,
-  findUser
+  findUser,
+  getUserById
 } from "./modules/users.js";
 
 import {
@@ -50,33 +51,40 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const PORT = process.env.PORT || 3000;
+
+
 /* =========================
    首页
 ========================= */
 
 app.get("/", (req, res) => {
 
-  res.send(`
-    <h1>AI外贸客户开发助手 V3.3</h1>
-    <p>AI联网获客系统运行中</p>
-  `);
+  res.json({
+    name: "AI外贸客户开发助手",
+    version: "3.3.0",
+    status: "running",
+    searchEngine: "Tavily"
+  });
 
 });
 
+
 /* =========================
-   Health
+   健康检查
 ========================= */
 
 app.get("/health", (req, res) => {
 
   res.json({
-    status: "ok",
+    success: true,
     version: "3.3.0",
-    search: "OpenAI Web Search",
-    time: new Date().toISOString()
+    status: "healthy",
+    search: "Tavily Web Search"
   });
 
 });
+
 
 /* =========================
    注册
@@ -84,49 +92,73 @@ app.get("/health", (req, res) => {
 
 app.post("/register", async (req, res) => {
 
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-
-    return res.json({
-      success: false,
-      message: "请输入邮箱和密码"
-    });
-
-  }
-
-  if (password.length < 6) {
-
-    return res.json({
-      success: false,
-      message: "密码至少6位"
-    });
-
-  }
-
   try {
 
-    const hash = await encryptPassword(password);
+    const { email, password } = req.body;
 
-    const id = await createUser(email, hash);
+    if (!email || !password) {
+
+      return res.status(400).json({
+        success: false,
+        message: "邮箱和密码不能为空"
+      });
+
+    }
+
+    if (password.length < 6) {
+
+      return res.status(400).json({
+        success: false,
+        message: "密码至少6位"
+      });
+
+    }
+
+    const oldUser = await findUser(email);
+
+    if (oldUser) {
+
+      return res.status(400).json({
+        success: false,
+        message: "该邮箱已经注册"
+      });
+
+    }
+
+    const passwordHash = await encryptPassword(password);
+
+    const id = await createUser(
+      email,
+      passwordHash
+    );
+
+    const user = await getUserById(id);
+
+    const token = createToken(user);
 
     res.json({
       success: true,
-      id
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        vip: user.vip
+      }
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error("注册错误:", error);
 
-    res.json({
+    res.status(500).json({
       success: false,
-      message: "注册失败，邮箱可能已存在"
+      message: "注册失败"
     });
 
   }
 
 });
+
 
 /* =========================
    登录
@@ -134,275 +166,248 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
 
-  const { email, password } = req.body;
+  try {
 
-  if (!email || !password) {
+    const { email, password } = req.body;
 
-    return res.json({
-      success: false,
-      message: "请输入邮箱和密码"
-    });
+    if (!email || !password) {
 
-  }
+      return res.status(400).json({
+        success: false,
+        message: "邮箱和密码不能为空"
+      });
 
-  const user = await findUser(email);
-
-  if (!user) {
-
-    return res.json({
-      success: false,
-      message: "用户不存在"
-    });
-
-  }
-
-  const ok = await comparePassword(
-    password,
-    user.password
-  );
-
-  if (!ok) {
-
-    return res.json({
-      success: false,
-      message: "密码错误"
-    });
-
-  }
-
-  const token = createToken(user);
-
-  res.json({
-
-    success: true,
-
-    token,
-
-    user: {
-      email: user.email,
-      vip: user.vip
     }
 
-  });
+    const user = await findUser(email);
+
+    if (!user) {
+
+      return res.status(401).json({
+        success: false,
+        message: "账号或密码错误"
+      });
+
+    }
+
+    const ok = await comparePassword(
+      password,
+      user.password
+    );
+
+    if (!ok) {
+
+      return res.status(401).json({
+        success: false,
+        message: "账号或密码错误"
+      });
+
+    }
+
+    const token = createToken(user);
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        vip: user.vip
+      }
+    });
+
+  } catch (error) {
+
+    console.error("登录错误:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "登录失败"
+    });
+
+  }
 
 });
 
+
 /* =========================
-   AI外贸客户开发
+   客户开发
 ========================= */
 
 app.post("/find-leads", async (req, res) => {
 
-  const {
-    token,
-    product,
-    country
-  } = req.body;
-
-  /* ---------- 参数检查 ---------- */
-
-  if (!token) {
-
-    return res.json({
-      success: false,
-      message: "请先登录"
-    });
-
-  }
-
-  if (!product || !country) {
-
-    return res.json({
-      success: false,
-      message: "请输入产品和目标国家"
-    });
-
-  }
-
-  /* ---------- Token ---------- */
-
-  const user = verifyToken(token);
-
-  if (!user) {
-
-    return res.json({
-      success: false,
-      message: "登录已过期，请重新登录"
-    });
-
-  }
-
-  /* ---------- 权限 ---------- */
-
-  const permission = checkMembership(user);
-
-  if (!permission.allow) {
-
-    return res.json(permission);
-
-  }
-
   try {
 
-    console.log("");
-    console.log("=================================");
-    console.log("V3.3 开始客户开发");
-    console.log("产品:", product);
-    console.log("国家:", country);
-    console.log("=================================");
+    const authHeader = req.headers.authorization || "";
 
-    /* ---------- 产品分析 ---------- */
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : "";
 
-    const analysis = analyzeProduct(
-      product,
-      country
-    );
+    const decoded = verifyToken(token);
 
-    /* ---------- AI联网寻找买家 ---------- */
+    if (!decoded) {
+
+      return res.status(401).json({
+        success: false,
+        message: "请先登录"
+      });
+
+    }
+
+    const user = await getUserById(decoded.id);
+
+    if (!user) {
+
+      return res.status(401).json({
+        success: false,
+        message: "用户不存在"
+      });
+
+    }
+
+    const membership = checkMembership(user);
+
+    if (!membership.allow) {
+
+      return res.status(403).json({
+        success: false,
+        message: membership.message
+      });
+
+    }
+
+    const { product, country } = req.body;
+
+    if (!product || !country) {
+
+      return res.status(400).json({
+        success: false,
+        message: "请输入产品和目标国家"
+      });
+
+    }
+
+
+    /* =========================
+       1. 产品分析
+    ========================= */
+
+    let analysis;
+
+    try {
+
+      analysis = await analyzeProduct(
+        product,
+        country
+      );
+
+    } catch {
+
+      analysis = {
+        product,
+        country,
+        keywords: [
+          product,
+          `${product} buyer`,
+          `${product} importer`,
+          `${product} distributor`
+        ]
+      };
+
+    }
+
+
+    /* =========================
+       2. 搜索海外公司
+    ========================= */
 
     const companies = await searchCompanies(
       product,
       country
     );
 
-    /* ---------- 没找到 ---------- */
 
-    if (!companies.length) {
-
-      return res.json({
-
-        success: true,
-
-        version: "V3.3",
-
-        analysis,
-
-        customers: [],
-
-        message:
-          "本次没有找到足够可靠的潜在买家，请更换产品关键词或目标国家后重试。",
-
-        remaining: permission.limit - 1
-
-      });
-
-    }
-
-    /* ---------- 客户处理 ---------- */
+    /* =========================
+       3. 公司评分
+    ========================= */
 
     const customers = [];
 
     for (const company of companies) {
 
-      let scoreData;
-
       try {
 
-        scoreData = scoreCompany(company);
+        const companyScore =
+          await scoreCompany(company);
 
-      } catch (error) {
-
-        scoreData = {
-          level: "B",
-          score: company.score || 60,
-          reason: company.description || ""
-        };
-
-      }
-
-      /*
-       * 注意：
-       * 这里不再无条件生成 purchase@example.com
-       */
-
-      let contact = {};
-
-      try {
-
-        contact = await findContact(
-          company,
-          country
+        company.score = Math.max(
+          company.score || 0,
+          companyScore || 0
         );
 
-      } catch (error) {
+      } catch {
 
-        contact = {
-          contactPerson: "",
-          email: "",
-          salesEmail: "",
-          linkedin: "",
-          country
-        };
-
+        // 保留搜索引擎评分
       }
 
-      let emailTemplate = "";
+
+      /* =========================
+         4. 查找公开邮箱
+      ========================= */
 
       try {
 
-        emailTemplate = generateEmail(
-          product,
-          country,
-          company.company
+        const contact = await findContact(
+          company.website
         );
 
-      } catch (error) {
+        if (contact && contact.email) {
+          company.email = contact.email;
+        }
 
-        emailTemplate = "";
+      } catch {
+
+        company.email = "";
       }
 
-      const customer = {
 
-        company: company.company,
-
-        country: company.country,
-
-        website: company.website,
-
-        industry: company.industry,
-
-        buyer_type: company.buyer_type,
-
-        score: scoreData.level,
-
-        scoreNumber:
-          Number(scoreData.score || company.score || 0),
-
-        reason:
-          scoreData.reason ||
-          company.description,
-
-        evidence:
-          company.evidence,
-
-        contactPerson:
-          contact.contactPerson || "",
-
-        email:
-          contact.email || "",
-
-        salesEmail:
-          contact.salesEmail || "",
-
-        linkedin:
-          contact.linkedin || "",
-
-        contactHint:
-          company.contact_hint || "",
-
-        emailTemplate,
-
-        source:
-          company.source,
-
-        status:
-          "未联系"
-
-      };
+      /* =========================
+         5. 生成开发信
+      ========================= */
 
       try {
 
-        await addCustomer(customer);
+        company.emailText =
+          await generateEmail(
+            product,
+            company
+          );
+
+      } catch {
+
+        company.emailText = "";
+
+      }
+
+
+      customers.push(company);
+
+    }
+
+
+    /* =========================
+       6. CRM 自动保存
+    ========================= */
+
+    for (const customer of customers) {
+
+      try {
+
+        await addCustomer(
+          user.id,
+          customer
+        );
 
       } catch (error) {
 
@@ -413,52 +418,38 @@ app.post("/find-leads", async (req, res) => {
 
       }
 
-      customers.push(customer);
-
     }
 
-    /* ---------- 导出 ---------- */
 
-    let excel = null;
-
-    try {
-
-      excel = exportLeads(customers);
-
-    } catch (error) {
-
-      console.error(
-        "Excel导出失败:",
-        error.message
-      );
-
-    }
-
-    /* ---------- 返回 ---------- */
+    /* =========================
+       7. 返回
+    ========================= */
 
     res.json({
 
       success: true,
 
-      version: "V3.3",
+      version: "3.3.0",
+
+      searchEngine: "Tavily",
 
       analysis,
 
       customers,
 
-      excel,
-
       count: customers.length,
 
       remaining:
-        Math.max(0, permission.limit - 1)
+        user.vip === "pro"
+          ? "unlimited"
+          : user.searchCount
 
     });
 
   } catch (error) {
 
     console.error(
-      "V3.3客户开发错误:",
+      "客户开发错误:",
       error
     );
 
@@ -468,13 +459,14 @@ app.post("/find-leads", async (req, res) => {
 
       message:
         error.message ||
-        "客户开发失败"
+        "客户搜索失败"
 
     });
 
   }
 
 });
+
 
 /* =========================
    404
@@ -492,20 +484,15 @@ app.use((req, res) => {
 
 });
 
+
 /* =========================
    启动
 ========================= */
 
-const PORT =
-  process.env.PORT || 3000;
-
 app.listen(PORT, () => {
 
-  console.log("");
-  console.log("=================================");
-  console.log("AI外贸客户开发助手 V3.3");
-  console.log("Server running on port:", PORT);
-  console.log("Search Engine: OpenAI Web Search");
-  console.log("=================================");
+  console.log(
+    `AI外贸客户开发助手 V3.3 已启动: ${PORT}`
+  );
 
 });
