@@ -1,5 +1,7 @@
 function text(value) {
-  if (value === null || value === undefined) return "";
+  if (value === null || value === undefined) {
+    return "";
+  }
 
   if (typeof value === "string") {
     return value;
@@ -8,11 +10,12 @@ function text(value) {
   if (typeof value === "object") {
     return (
       value.name ||
+      value.company ||
       value.title ||
       value.text ||
       value.value ||
-      JSON.stringify(value)
-    );
+      ""
+    ).toString();
   }
 
   return String(value);
@@ -52,6 +55,30 @@ const SUPPLIER_SIGNALS = [
   "wholesale supplier"
 ];
 
+const REVERSE_SIGNALS = [
+  "become a distributor",
+  "become our distributor",
+  "authorized distributor application",
+  "distributor application",
+  "distributor program",
+  "dealer application",
+  "dealer program",
+  "become a dealer",
+  "become a reseller",
+  "authorized reseller",
+  "reseller application",
+  "buy our products",
+  "buy from us",
+  "our exclusive products",
+  "minimum purchase requirement",
+  "minimum purchase target",
+  "minimum order quantity",
+  "moq required",
+  "apply to become",
+  "distributor requirements",
+  "dealer requirements"
+];
+
 const PRODUCT_SIGNALS = [
   "phone case",
   "phone cases",
@@ -65,11 +92,17 @@ const PRODUCT_SIGNALS = [
 ];
 
 function count(textValue, signals) {
-  const value = text(textValue).toLowerCase();
+  const value =
+    text(textValue).toLowerCase();
 
-  return signals.reduce((total, signal) => {
-    return total + (value.includes(signal) ? 1 : 0);
-  }, 0);
+  return signals.reduce(
+    (total, signal) =>
+      total +
+      (value.includes(signal)
+        ? 1
+        : 0),
+    0
+  );
 }
 
 export function scoreCompany(company) {
@@ -88,11 +121,33 @@ export function scoreCompany(company) {
 
   let score = 40;
 
-  const buyerHits = count(combined, BUYER_SIGNALS);
-  const supplierHits = count(combined, SUPPLIER_SIGNALS);
-  const productHits = count(combined, PRODUCT_SIGNALS);
+  const buyerHits =
+    count(
+      combined,
+      BUYER_SIGNALS
+    );
 
-  // 官网验证
+  const supplierHits =
+    count(
+      combined,
+      SUPPLIER_SIGNALS
+    );
+
+  const reverseHits =
+    count(
+      combined,
+      REVERSE_SIGNALS
+    );
+
+  const productHits =
+    count(
+      combined,
+      PRODUCT_SIGNALS
+    );
+
+  /*
+   * 官网
+   */
   if (
     company.verified === true ||
     company.websiteVerified === true
@@ -102,51 +157,84 @@ export function scoreCompany(company) {
     score -= 15;
   }
 
-  // 产品相关性
-  if (company.productRelevant === true) {
+  /*
+   * 产品
+   */
+  if (
+    company.productRelevant === true
+  ) {
     score += 15;
-  } else if (productHits > 0) {
+  } else if (
+    productHits > 0
+  ) {
     score += 8;
   } else {
-    score -= 25;
+    score -= 30;
   }
 
-  // 买家属性
+  /*
+   * 买家信号
+   */
   if (buyerHits >= 1) {
-    score += Math.min(buyerHits * 4, 20);
+    score += Math.min(
+      buyerHits * 4,
+      20
+    );
   }
 
-  // 类型奖励
-  const type = text(company.type).toLowerCase();
+  /*
+   * 公司类型
+   */
+  const type =
+    text(company.type)
+      .toLowerCase();
 
-  if (type.includes("importer")) {
+  if (
+    type.includes("importer")
+  ) {
     score += 8;
   }
 
-  if (type.includes("distributor")) {
+  if (
+    type.includes("distributor")
+  ) {
     score += 7;
   }
 
-  if (type.includes("wholesaler")) {
+  if (
+    type.includes("wholesaler")
+  ) {
     score += 6;
   }
 
-  if (type.includes("retailer")) {
+  if (
+    type.includes("retailer")
+  ) {
     score += 5;
   }
 
-  // 企业邮箱
-  const email = text(company.email).toLowerCase();
+  /*
+   * 企业邮箱
+   */
+  const email =
+    text(company.email)
+      .toLowerCase();
 
   if (
     email &&
-    !email.includes("example.com") &&
-    !email.includes("test.com")
+    !email.includes(
+      "example.com"
+    ) &&
+    !email.includes(
+      "test.com"
+    )
   ) {
     score += 12;
   }
 
-  // 供应商强烈扣分
+  /*
+   * 供应商
+   */
   if (supplierHits >= 2) {
     score -= 30;
   }
@@ -155,29 +243,50 @@ export function scoreCompany(company) {
     score -= 20;
   }
 
-  // 已经被识别为坏页面
-  const pageType = text(company.pageType).toLowerCase();
-
-  if (
-    pageType.includes("directory") ||
-    pageType.includes("article") ||
-    pageType.includes("blog") ||
-    pageType.includes("logistics")
-  ) {
-    score -= 40;
+  /*
+   * 反向招商：
+   * 这是最高级别的扣分。
+   */
+  if (reverseHits >= 1) {
+    score -= 35;
   }
 
-  // 搜索质量分作为辅助，但不能直接决定最终分数
+  if (reverseHits >= 2) {
+    score -= 30;
+  }
+
+  /*
+   * 如果 companySearch 已经确认，
+   * 仍然保留这层保险。
+   */
   if (
-    typeof company.qualityScore === "number" &&
+    Number(
+      company.reverseDistributionHits
+    ) >= 2
+  ) {
+    score -= 50;
+  }
+
+  /*
+   * 质量分只做轻微辅助，
+   * 防止搜索质量分直接把垃圾顶到90+。
+   */
+  if (
+    typeof company.qualityScore ===
+      "number" &&
     company.qualityScore > 0
   ) {
     score += Math.round(
-      (company.qualityScore - 50) * 0.15
+      (company.qualityScore - 50) *
+        0.1
     );
   }
 
-  score = Math.round(score);
-
-  return Math.max(0, Math.min(100, score));
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(score)
+    )
+  );
 }
