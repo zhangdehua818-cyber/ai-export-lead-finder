@@ -1,17 +1,4 @@
 export const SEARCH_CONFIG = {
-
-
-provider:"demo",
-
-
-// 后续填写真实API
-
-googleKey:"",
-
-bingKey:"",
-
-serpKey:""
-
-
-
+  provider: "bing",
+  bingKey: process.env.BING_KEY || ""
 };
