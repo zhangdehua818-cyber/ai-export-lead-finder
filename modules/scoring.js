@@ -1,28 +1,25 @@
 /**
- * V3.5 企业买家评分
+ * AI外贸客户开发助手 V3.6
  *
- * 评分目标：
- * 不是“和产品有关”就高分，
- * 而是判断“值不值得开发”。
+ * 最终客户评分
  */
 
-const STRONG_BUYER_SIGNALS = [
+const STRONG_BUYER = [
   "purchasing",
   "procurement",
   "purchase order",
-  "request for quotation",
-  "request a quote",
-  "rfq",
+  "purchase orders",
   "sourcing",
   "importer",
   "importers",
   "distributor",
   "distributors",
   "wholesaler",
-  "wholesalers"
+  "wholesalers",
+  "wholesale"
 ];
 
-const BUYER_SIGNALS = [
+const BUYER = [
   "retailer",
   "retail",
   "buyer",
@@ -34,12 +31,13 @@ const BUYER_SIGNALS = [
   "ecommerce",
   "e-commerce",
   "online store",
+  "online shop",
   "brand",
   "shop",
   "stores"
 ];
 
-const PRODUCT_SIGNALS = [
+const PRODUCT = [
   "phone case",
   "phone cases",
   "phone accessory",
@@ -50,7 +48,7 @@ const PRODUCT_SIGNALS = [
   "smartphone accessories"
 ];
 
-const SUPPLIER_SIGNALS = [
+const SUPPLIER = [
   "manufacturer",
   "manufacturing",
   "factory",
@@ -59,143 +57,255 @@ const SUPPLIER_SIGNALS = [
   "factory direct",
   "oem manufacturer",
   "odm manufacturer",
-  "cnc machining",
-  "machining service",
-  "contract manufacturer"
+  "contract manufacturer",
+  "production factory"
 ];
 
-const BAD_SIGNALS = [
-  "freight",
-  "freight forwarding",
-  "freight forwarder",
-  "logistics",
-  "shipping company",
-  "cargo",
-  "buyer list",
+const BAD = [
+  "directory",
   "buyers list",
+  "buyer list",
   "supplier directory",
   "company directory",
-  "b2b directory",
+  "importer list",
+  "buying leads",
   "complete guide",
-  "marketplace"
+  "marketplace",
+  "freight",
+  "logistics",
+  "freight forwarding",
+  "shipping company"
 ];
 
-function textOf(company) {
+function safe(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "object") {
+
+    return (
+      value.text ||
+      value.name ||
+      value.title ||
+      value.value ||
+      ""
+    );
+  }
+
+  return String(value);
+}
+
+function getText(company) {
+
   return [
     company.company,
-    company.title,
+    company.type,
     company.description,
     company.website,
-    company.verifiedText,
     company.verifiedTitle,
-    company.type
+    company.verifiedText,
+    company.verification
   ]
-    .filter(Boolean)
+    .map(safe)
     .join(" ")
     .toLowerCase();
 }
 
-function countSignals(text, list) {
-  let count = 0;
+function count(text, words) {
 
-  for (const signal of list) {
-    if (text.includes(signal)) {
-      count++;
+  let result = 0;
+
+  for (const word of words) {
+
+    if (
+      text.includes(word)
+    ) {
+      result++;
     }
   }
 
-  return count;
+  return result;
 }
 
-export function scoreCompany(company) {
-  const text = textOf(company);
+export function scoreCompany(
+  company
+) {
 
-  let score = 25;
+  const text =
+    getText(company);
 
-  const strongBuyer = countSignals(
-    text,
-    STRONG_BUYER_SIGNALS
-  );
+  /*
+   * 如果搜索阶段已经核验，
+   * 直接给予基础可信度。
+   */
+  let score =
+    company.verified === true
+      ? 25
+      : 10;
 
-  const buyer = countSignals(
-    text,
-    BUYER_SIGNALS
-  );
+  const strong =
+    count(
+      text,
+      STRONG_BUYER
+    );
 
-  const product = countSignals(
-    text,
-    PRODUCT_SIGNALS
-  );
+  const buyer =
+    count(
+      text,
+      BUYER
+    );
 
-  const supplier = countSignals(
-    text,
-    SUPPLIER_SIGNALS
-  );
+  const product =
+    count(
+      text,
+      PRODUCT
+    );
 
-  const bad = countSignals(
-    text,
-    BAD_SIGNALS
-  );
+  const supplier =
+    count(
+      text,
+      SUPPLIER
+    );
 
-  // 强买家信号
-  score += Math.min(strongBuyer * 10, 40);
+  const bad =
+    count(
+      text,
+      BAD
+    );
 
-  // 普通买家信号
-  score += Math.min(buyer * 6, 24);
+  /*
+   * 强买家信号
+   */
+  score +=
+    Math.min(
+      strong * 10,
+      40
+    );
 
-  // 产品相关性
-  score += Math.min(product * 5, 15);
+  /*
+   * 普通买家信号
+   */
+  score +=
+    Math.min(
+      buyer * 6,
+      24
+    );
 
-  // 官网验证
-  if (company.verified === true) {
+  /*
+   * 产品匹配
+   */
+  score +=
+    Math.min(
+      product * 5,
+      20
+    );
+
+  /*
+   * 企业类型
+   */
+  const type =
+    safe(
+      company.type
+    ).toLowerCase();
+
+  if (
+    type === "importer" ||
+    type === "distributor" ||
+    type === "wholesaler"
+  ) {
     score += 8;
   }
 
-  // 邮箱
+  if (
+    type === "retailer" ||
+    type === "brand"
+  ) {
+    score += 6;
+  }
+
+  /*
+   * 真实邮箱
+   */
   if (
     company.email &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(company.email)
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      company.email
+    )
   ) {
     score += 8;
   }
 
-  // 供应商惩罚
-  score -= Math.min(supplier * 15, 45);
-
-  // 垃圾页面严重惩罚
-  score -= Math.min(bad * 20, 60);
-
-  // 明确类型奖励
-  const type = String(company.type || "").toLowerCase();
-
+  /*
+   * 二次核验
+   */
   if (
-    [
-      "retailer",
-      "distributor",
-      "importer",
-      "wholesaler",
-      "brand"
-    ].includes(type)
+    company.verification ===
+    "二次企业核验通过"
   ) {
-    score += 5;
+    score += 8;
   }
 
-  // 没有任何买家证据
-  if (strongBuyer === 0 && buyer === 0) {
-    score -= 20;
-  }
+  /*
+   * 供应商惩罚
+   */
+  score -=
+    Math.min(
+      supplier * 14,
+      42
+    );
 
-  // 明确是纯供应商
+  /*
+   * 垃圾页面惩罚
+   */
+  score -=
+    Math.min(
+      bad * 20,
+      60
+    );
+
+  /*
+   * 完全没有买家信号
+   */
   if (
-    supplier >= 2 &&
-    strongBuyer === 0 &&
+    strong === 0 &&
     buyer === 0
   ) {
     score -= 30;
   }
 
-  // 限制范围
-  score = Math.max(0, Math.min(100, score));
+  /*
+   * 只有供应商，没有买家属性
+   */
+  if (
+    supplier >= 2 &&
+    strong === 0 &&
+    buyer === 0
+  ) {
+    score -= 40;
+  }
 
-  return Math.round(score);
+  /*
+   * 限制
+   */
+  score =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        score
+      )
+    );
+
+  return Math.round(
+    score
+  );
 }
