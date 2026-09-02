@@ -1,4 +1,5 @@
-export const SEARCH_CONFIG = {
-  provider: "bing",
-  bingKey: process.env.BING_KEY || ""
+export const AI_CONFIG = {
+  provider: "openai",
+  model: "gpt-5.6-luna",
+  apiKey: process.env.OPENAI_API_KEY || ""
 };
