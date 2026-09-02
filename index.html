@@ -1,1306 +1,1211 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>
-AI外贸客户开发助手 V3.0
-</title>
-
+<title>AI外贸客户开发助手 V3.3</title>
 
 <style>
 
 *{
-
-box-sizing:border-box;
-
+  box-sizing:border-box;
 }
-
-
 
 body{
-
-margin:0;
-
-font-family:
-
-"Microsoft YaHei",Arial;
-
-background:#f4f7fb;
-
-color:#1f2937;
-
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;
+  background:#f5f7fb;
+  color:#1f2937;
 }
-
-
 
 .container{
-
-max-width:1200px;
-
-margin:auto;
-
-padding:30px;
-
+  max-width:1100px;
+  margin:0 auto;
+  padding:30px 20px;
 }
-
-
 
 .header{
-
-background:white;
-
-padding:25px;
-
-border-radius:20px;
-
-box-shadow:0 5px 20px rgba(0,0,0,.08);
-
-margin-bottom:20px;
-
+  background:white;
+  border-radius:16px;
+  padding:24px 28px;
+  margin-bottom:20px;
+  box-shadow:0 4px 18px rgba(0,0,0,.05);
 }
 
-
-
-h1{
-
-color:#2563eb;
-
-text-align:center;
-
+.header h1{
+  margin:0 0 8px;
+  font-size:28px;
 }
 
-
-
-.subtitle{
-
-text-align:center;
-
-color:#666;
-
+.header p{
+  margin:0;
+  color:#6b7280;
 }
 
-
+.version{
+  display:inline-block;
+  margin-left:8px;
+  padding:4px 9px;
+  background:#eef2ff;
+  color:#4f46e5;
+  border-radius:8px;
+  font-size:13px;
+}
 
 .card{
-
-background:white;
-
-padding:25px;
-
-border-radius:20px;
-
-margin-bottom:20px;
-
-box-shadow:0 5px 20px rgba(0,0,0,.08);
-
+  background:white;
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:20px;
+  box-shadow:0 4px 18px rgba(0,0,0,.05);
 }
 
-
-
-input,select{
-
-width:100%;
-
-padding:14px;
-
-margin:8px 0;
-
-border:1px solid #ddd;
-
-border-radius:10px;
-
-font-size:16px;
-
+.card h2{
+  margin-top:0;
+  font-size:20px;
 }
 
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
 
+label{
+  display:block;
+  font-weight:600;
+  margin-bottom:8px;
+}
+
+input{
+  width:100%;
+  padding:13px 14px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font-size:15px;
+  outline:none;
+}
+
+input:focus{
+  border-color:#6366f1;
+}
 
 button{
-
-width:100%;
-
-padding:14px;
-
-border:none;
-
-border-radius:10px;
-
-background:#2563eb;
-
-color:white;
-
-font-size:16px;
-
-cursor:pointer;
-
-margin-top:10px;
-
+  border:0;
+  border-radius:10px;
+  padding:13px 20px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
 }
 
-
-
-button:hover{
-
-opacity:.9;
-
+.primary{
+  background:#4f46e5;
+  color:white;
 }
 
-
-
-.vip-box{
-
-display:flex;
-
-gap:15px;
-
+.primary:hover{
+  background:#4338ca;
 }
 
+.secondary{
+  background:#eef2ff;
+  color:#4338ca;
+}
 
+.danger{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:18px;
+}
+
+.status{
+  margin-top:15px;
+  padding:12px 14px;
+  border-radius:10px;
+  background:#f3f4f6;
+  color:#4b5563;
+  display:none;
+}
+
+.status.show{
+  display:block;
+}
+
+.user-box{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.user-info{
+  font-size:14px;
+}
 
 .vip{
-
-flex:1;
-
-padding:20px;
-
-border-radius:15px;
-
-background:#f8fafc;
-
-text-align:center;
-
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:8px;
+  background:#fef3c7;
+  color:#92400e;
+  font-weight:600;
+  margin-left:6px;
 }
-
-
-
-.vip h3{
-
-color:#2563eb;
-
-}
-
-
-
-.customer{
-
-background:#f8fafc;
-
-padding:20px;
-
-margin-top:15px;
-
-border-radius:15px;
-
-border-left:5px solid #2563eb;
-
-}
-
-
-
-.score{
-
-font-size:22px;
-
-color:#2563eb;
-
-}
-
-
 
 .hidden{
-
-display:none;
-
+  display:none!important;
 }
 
-
-
-.flex{
-
-display:flex;
-
-gap:20px;
-
+.loading{
+  padding:25px;
+  text-align:center;
+  color:#6b7280;
 }
 
-
-
-.flex > div{
-
-flex:1;
-
+.result-count{
+  font-size:14px;
+  color:#6b7280;
+  margin-bottom:15px;
 }
 
-
-
-.info{
-
-background:#eff6ff;
-
-padding:15px;
-
-border-radius:12px;
-
+.customer{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:14px;
 }
 
-
-
-.green{
-
-background:#16a34a;
-
+.customer-top{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  align-items:flex-start;
 }
 
-
-
-.red{
-
-background:#dc2626;
-
+.customer h3{
+  margin:0 0 7px;
+  font-size:18px;
 }
 
-
-
-textarea{
-
-width:100%;
-
-height:200px;
-
-padding:15px;
-
-border-radius:10px;
-
-border:1px solid #ddd;
-
+.score{
+  min-width:65px;
+  text-align:center;
+  padding:6px 9px;
+  border-radius:8px;
+  background:#ecfdf5;
+  color:#047857;
+  font-weight:700;
 }
 
+.meta{
+  font-size:14px;
+  color:#6b7280;
+  line-height:1.7;
+}
 
+.website{
+  margin-top:8px;
+}
+
+.website a{
+  color:#4f46e5;
+  text-decoration:none;
+  word-break:break-all;
+}
+
+.email{
+  margin-top:8px;
+  font-weight:600;
+}
+
+.email.empty{
+  color:#9ca3af;
+  font-weight:normal;
+}
+
+.email-text{
+  margin-top:12px;
+  padding:12px;
+  background:#f9fafb;
+  border-radius:9px;
+  white-space:pre-wrap;
+  line-height:1.6;
+  font-size:14px;
+}
+
+.empty{
+  text-align:center;
+  color:#9ca3af;
+  padding:30px;
+}
+
+@media(max-width:700px){
+
+  .form-row{
+    grid-template-columns:1fr;
+  }
+
+  .container{
+    padding:15px;
+  }
+
+  .header{
+    padding:20px;
+  }
+
+  .card{
+    padding:18px;
+  }
+
+  .customer-top{
+    flex-direction:column;
+  }
+
+}
 
 </style>
-
 </head>
-
 
 <body>
 
-
 <div class="container">
 
+  <!-- =========================
+       Header
+  ========================== -->
 
-<div class="header">
+  <div class="header">
+
+    <h1>
+      AI外贸客户开发助手
+      <span class="version">V3.3</span>
+    </h1>
+
+    <p>
+      Tavily 海外搜索 · 潜在买家筛选 · 公司评分 · 客户开发
+    </p>
+
+  </div>
 
 
-<h1>
-🌎 AI外贸客户开发助手 V3.0
-</h1>
+  <!-- =========================
+       登录注册
+  ========================== -->
+
+  <div class="card" id="authCard">
+
+    <h2>账号登录</h2>
+
+    <div class="form-row">
+
+      <div>
+        <label>邮箱</label>
+
+        <input
+          id="email"
+          type="email"
+          placeholder="请输入邮箱"
+        >
+      </div>
+
+      <div>
+        <label>密码</label>
+
+        <input
+          id="password"
+          type="password"
+          placeholder="请输入密码"
+        >
+      </div>
+
+    </div>
+
+    <div class="actions">
+
+      <button
+        class="primary"
+        onclick="login()"
+      >
+        登录
+      </button>
+
+      <button
+        class="secondary"
+        onclick="register()"
+      >
+        注册账号
+      </button>
+
+    </div>
+
+    <div
+      id="authStatus"
+      class="status"
+    ></div>
+
+  </div>
 
 
-<p class="subtitle">
+  <!-- =========================
+       用户状态
+  ========================== -->
 
-AI寻找海外采购商 · 自动分析 · 自动开发
+  <div
+    class="card hidden"
+    id="userCard"
+  >
 
-</p>
+    <div class="user-box">
 
+      <div class="user-info">
+
+        当前账号：
+        <strong id="userEmail"></strong>
+
+        <span
+          class="vip"
+          id="userVip"
+        ></span>
+
+      </div>
+
+      <button
+        class="danger"
+        onclick="logout()"
+      >
+        退出登录
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       客户搜索
+  ========================== -->
+
+  <div
+    class="card hidden"
+    id="searchCard"
+  >
+
+    <h2>开发海外客户</h2>
+
+    <div class="form-row">
+
+      <div>
+
+        <label>产品</label>
+
+        <input
+          id="product"
+          type="text"
+          placeholder="例如：手机壳、LED灯、汽车配件"
+        >
+
+      </div>
+
+      <div>
+
+        <label>目标国家</label>
+
+        <input
+          id="country"
+          type="text"
+          placeholder="例如：美国、德国、英国"
+        >
+
+      </div>
+
+    </div>
+
+    <div class="actions">
+
+      <button
+        class="primary"
+        onclick="findLeads()"
+        id="searchButton"
+      >
+        开始开发客户
+      </button>
+
+    </div>
+
+    <div
+      id="searchStatus"
+      class="status"
+    ></div>
+
+  </div>
+
+
+  <!-- =========================
+       搜索结果
+  ========================== -->
+
+  <div
+    class="card hidden"
+    id="resultCard"
+  >
+
+    <h2>客户开发结果</h2>
+
+    <div
+      id="resultCount"
+      class="result-count"
+    ></div>
+
+    <div
+      id="results"
+    ></div>
+
+  </div>
 
 </div>
 
-
-
-<!-- 登录注册 -->
-
-
-<div class="card">
-
-
-<h2>
-用户中心
-</h2>
-
-
-<div id="loginArea">
-
-
-<input
-
-id="email"
-
-placeholder="邮箱"
-
->
-
-
-<input
-
-id="password"
-
-type="password"
-
-placeholder="密码"
-
->
-
-
-<div class="flex">
-
-
-<div>
-
-<button onclick="register()">
-
-注册
-
-</button>
-
-</div>
-
-
-<div>
-
-<button onclick="login()">
-
-登录
-
-</button>
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
-
-<div id="userArea" class="hidden">
-
-
-<div class="info">
-
-
-账号：
-
-<span id="userEmail"></span>
-
-
-<br>
-
-
-会员：
-
-<span id="userVip"></span>
-
-
-<br>
-
-
-Token状态：
-
-已登录
-
-
-</div>
-
-
-<button onclick="logout()">
-
-退出登录
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-<!-- 会员 -->
-
-
-<div class="card">
-
-
-<h2>
-
-会员套餐
-
-</h2>
-
-
-<div class="vip-box">
-
-
-<div class="vip">
-
-<h3>
-
-免费版
-
-</h3>
-
-
-<p>
-
-每日3次搜索
-
-</p>
-
-</div>
-
-
-
-<div class="vip">
-
-<h3>
-
-专业版
-
-</h3>
-
-
-<p>
-
-¥99/月
-
-</p>
-
-
-<p>
-
-100次搜索
-
-</p>
-
-</div>
-
-
-
-<div class="vip">
-
-<h3>
-
-企业版
-
-</h3>
-
-
-<p>
-
-¥299/月
-
-</p>
-
-
-<p>
-
-团队使用
-
-</p>
-
-</div>
-
-
-
-</div>
-
-
-</div>
-</div>
 
 <script>
 
-let token = localStorage.getItem("token") || "";
-
-let csvData = "";
+/* =========================
+   API
+========================= */
 
 const API =
-"https://ai-export-lead-finder.onrender.com";
+  "https://ai-export-lead-finder.onrender.com";
 
 
+/* =========================
+   本地状态
+========================= */
 
-// 页面加载检查登录
+let token =
+  localStorage.getItem("ai_export_token") || "";
 
-window.onload=function(){
+let currentUser =
+  JSON.parse(
+    localStorage.getItem("ai_export_user") || "null"
+  );
 
-if(token){
 
-showUser();
+/* =========================
+   页面初始化
+========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    if(token && currentUser){
+
+      showLoggedIn();
+
+    }else{
+
+      showLoggedOut();
+
+    }
+
+  }
+);
+
+
+/* =========================
+   状态提示
+========================= */
+
+function showStatus(
+  elementId,
+  message,
+  show=true
+){
+
+  const element =
+    document.getElementById(elementId);
+
+  if(!element) return;
+
+  element.innerText =
+    message || "";
+
+  if(show){
+
+    element.classList.add("show");
+
+  }else{
+
+    element.classList.remove("show");
+
+  }
 
 }
 
-}
 
-
-
-
-// 注册
+/* =========================
+   注册
+========================= */
 
 async function register(){
 
+  const email =
+    document.getElementById("email").value.trim();
 
-let email =
-document.getElementById("email").value;
+  const password =
+    document.getElementById("password").value;
 
+  if(!email || !password){
 
-let password =
-document.getElementById("password").value;
+    showStatus(
+      "authStatus",
+      "请输入邮箱和密码"
+    );
 
+    return;
+  }
 
+  showStatus(
+    "authStatus",
+    "正在注册..."
+  );
 
-let res = await fetch(
+  try{
 
-API+"/register",
+    const response =
+      await fetch(
+        `${API}/register`,
+        {
+          method:"POST",
 
-{
+          headers:{
+            "Content-Type":"application/json"
+          },
 
-method:"POST",
+          body:JSON.stringify({
+            email,
+            password
+          })
+        }
+      );
 
-headers:{
+    const data =
+      await response.json();
 
-"Content-Type":"application/json"
+    if(!response.ok || !data.success){
 
-},
+      throw new Error(
+        data.message || "注册失败"
+      );
 
-body:JSON.stringify({
+    }
 
-email,
+    saveLogin(
+      data.token,
+      data.user
+    );
 
-password
+    showStatus(
+      "authStatus",
+      "注册成功"
+    );
 
-})
+    showLoggedIn();
+
+  }catch(error){
+
+    showStatus(
+      "authStatus",
+      error.message || "注册失败"
+    );
+
+  }
 
 }
 
-);
 
-
-
-let data = await res.json();
-
-
-
-if(data.success){
-
-alert(
-
-"注册成功，请登录"
-
-);
-
-}else{
-
-
-alert(
-
-data.message || "注册失败"
-
-);
-
-
-}
-
-
-}
-
-
-
-
-
-// 登录
+/* =========================
+   登录
+========================= */
 
 async function login(){
 
+  const email =
+    document.getElementById("email").value.trim();
 
-let email =
-document.getElementById("email").value;
+  const password =
+    document.getElementById("password").value;
 
+  if(!email || !password){
 
-let password =
-document.getElementById("password").value;
+    showStatus(
+      "authStatus",
+      "请输入邮箱和密码"
+    );
 
+    return;
+  }
 
+  showStatus(
+    "authStatus",
+    "正在登录..."
+  );
 
-let res = await fetch(
+  try{
 
-API+"/login",
+    const response =
+      await fetch(
+        `${API}/login`,
+        {
+          method:"POST",
 
-{
+          headers:{
+            "Content-Type":"application/json"
+          },
 
-method:"POST",
+          body:JSON.stringify({
+            email,
+            password
+          })
+        }
+      );
 
-headers:{
+    const data =
+      await response.json();
 
-"Content-Type":"application/json"
+    if(!response.ok || !data.success){
 
-},
+      throw new Error(
+        data.message || "登录失败"
+      );
 
-body:JSON.stringify({
+    }
 
-email,
+    saveLogin(
+      data.token,
+      data.user
+    );
 
-password
+    showStatus(
+      "authStatus",
+      "登录成功"
+    );
 
-})
+    showLoggedIn();
 
-}
+  }catch(error){
 
-);
+    showStatus(
+      "authStatus",
+      error.message || "登录失败"
+    );
 
-
-
-let data = await res.json();
-
-
-
-if(data.success){
-
-
-token=data.token;
-
-
-localStorage.setItem(
-
-"token",
-
-token
-
-);
-
-
-
-localStorage.setItem(
-
-"user",
-
-JSON.stringify(data.user)
-
-);
-
-
-
-showUser();
-
-
-alert(
-
-"登录成功"
-
-);
-
-
-
-}else{
-
-
-alert(
-
-data.message
-
-);
-
-
+  }
 
 }
 
 
-}
+/* =========================
+   保存登录状态
+========================= */
 
+function saveLogin(
+  newToken,
+  user
+){
 
+  token =
+    newToken || "";
 
+  currentUser =
+    user || null;
 
+  localStorage.setItem(
+    "ai_export_token",
+    token
+  );
 
-
-
-// 显示用户
-
-function showUser(){
-
-
-let user =
-
-JSON.parse(
-
-localStorage.getItem("user")
-
-);
-
-
-
-if(!user){
-
-return;
+  localStorage.setItem(
+    "ai_export_user",
+    JSON.stringify(currentUser)
+  );
 
 }
 
 
+/* =========================
+   登录后页面
+========================= */
 
-document.getElementById(
+function showLoggedIn(){
 
-"loginArea"
+  document
+    .getElementById("authCard")
+    .classList.add("hidden");
 
-).className="hidden";
+  document
+    .getElementById("userCard")
+    .classList.remove("hidden");
 
+  document
+    .getElementById("searchCard")
+    .classList.remove("hidden");
 
+  document
+    .getElementById("userEmail")
+    .innerText =
+      currentUser?.email || "";
 
-document.getElementById(
-
-"userArea"
-
-).className="";
-
-
-
-document.getElementById(
-
-"userEmail"
-
-).innerText=
-
-user.email;
-
-
-
-document.getElementById(
-
-"userVip"
-
-).innerText=
-
-user.vip;
-
-
+  document
+    .getElementById("userVip")
+    .innerText =
+      currentUser?.vip === "pro"
+        ? "PRO会员"
+        : "免费用户";
 
 }
 
 
+/* =========================
+   未登录页面
+========================= */
+
+function showLoggedOut(){
+
+  document
+    .getElementById("authCard")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("userCard")
+    .classList.add("hidden");
+
+  document
+    .getElementById("searchCard")
+    .classList.add("hidden");
+
+}
 
 
-
-
-
-// 退出
+/* =========================
+   退出登录
+========================= */
 
 function logout(){
 
+  token = "";
 
-localStorage.removeItem(
+  currentUser = null;
 
-"token"
+  localStorage.removeItem(
+    "ai_export_token"
+  );
 
-);
+  localStorage.removeItem(
+    "ai_export_user"
+  );
 
+  document
+    .getElementById("resultCard")
+    .classList.add("hidden");
 
-localStorage.removeItem(
-
-"user"
-
-);
-
-
-
-token="";
-
-
-location.reload();
-
+  showLoggedOut();
 
 }
 
 
-
-
-
-
-</script>
-
-
-<!-- 客户搜索区域 -->
-
-
-<div class="card">
-
-
-<h2>
-
-🚀 AI寻找海外客户
-
-</h2>
-
-
-<input
-
-id="product"
-
-placeholder="输入产品，例如：CNC加工件"
-
->
-
-
-<select id="country">
-
-
-<option>
-
-Germany
-
-</option>
-
-
-<option>
-
-USA
-
-</option>
-
-
-<option>
-
-UK
-
-</option>
-
-
-<option>
-
-France
-
-</option>
-
-
-<option>
-
-Canada
-
-</option>
-
-
-</select>
-
-
-
-<button onclick="findLeads()">
-
-开始寻找客户
-
-</button>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-
-<h2>
-
-📊 产品分析
-
-</h2>
-
-
-<div id="analysis">
-
-等待分析...
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-<div class="card">
-
-
-<h2>
-
-🏢 海外客户列表
-
-</h2>
-
-
-<button class="green" onclick="downloadCSV()">
-
-导出客户名单
-
-</button>
-
-
-<div id="customers">
-
-暂无客户
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-<div class="card">
-
-
-<h2>
-
-✉️ AI开发信
-
-</h2>
-
-
-<textarea id="emailText">
-
-等待生成
-
-</textarea>
-
-
-</div>
-
-
-
-
-
-<script>
-
-
-
-
-// 搜索客户
+/* =========================
+   开始开发客户
+========================= */
 
 async function findLeads(){
 
+  const product =
+    document
+      .getElementById("product")
+      .value
+      .trim();
+
+  const country =
+    document
+      .getElementById("country")
+      .value
+      .trim();
+
+  if(!product){
+
+    showStatus(
+      "searchStatus",
+      "请输入产品"
+    );
+
+    return;
+
+  }
+
+  if(!country){
+
+    showStatus(
+      "searchStatus",
+      "请输入目标国家"
+    );
+
+    return;
+
+  }
+
+  if(!token){
+
+    showStatus(
+      "searchStatus",
+      "登录状态已失效，请重新登录"
+    );
+
+    showLoggedOut();
+
+    return;
+
+  }
 
 
-if(!token){
+  const button =
+    document.getElementById(
+      "searchButton"
+    );
+
+  button.disabled = true;
+
+  button.innerText =
+    "正在寻找海外客户...";
+
+  showStatus(
+    "searchStatus",
+    "正在搜索真实海外公司，请稍候..."
+  );
+
+  document
+    .getElementById("resultCard")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("results")
+    .innerHTML =
+      `<div class="loading">
+        正在通过 Tavily 搜索海外买家...
+      </div>`;
+
+  try{
+
+    const response =
+      await fetch(
+        `${API}/find-leads`,
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":
+              `Bearer ${token}`
+          },
+
+          body:JSON.stringify({
+            product,
+            country
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if(response.status === 401){
+
+      logout();
+
+      throw new Error(
+        "登录已失效，请重新登录"
+      );
+
+    }
+
+    if(!response.ok || !data.success){
+
+      throw new Error(
+        data.message ||
+        "客户搜索失败"
+      );
+
+    }
 
 
-alert(
+    /* =========================
+       更新用户数据
+    ========================= */
 
-"请先登录"
+    if(data.user){
 
-);
+      currentUser =
+        data.user;
+
+      localStorage.setItem(
+        "ai_export_user",
+        JSON.stringify(currentUser)
+      );
+
+    }
 
 
-return;
+    /* =========================
+       显示结果
+    ========================= */
+
+    renderResults(
+      data.customers || []
+    );
+
+    showStatus(
+      "searchStatus",
+      `搜索完成，共找到 ${data.count || 0} 个潜在客户`
+    );
+
+  }catch(error){
+
+    document
+      .getElementById("results")
+      .innerHTML =
+        `<div class="empty">
+          ${escapeHtml(
+            error.message ||
+            "搜索失败"
+          )}
+        </div>`;
+
+    showStatus(
+      "searchStatus",
+      error.message ||
+      "客户搜索失败"
+    );
+
+  }finally{
+
+    button.disabled = false;
+
+    button.innerText =
+      "开始开发客户";
+
+  }
 
 }
 
 
+/* =========================
+   渲染客户
+========================= */
 
-let product=
+function renderResults(customers){
 
-document.getElementById(
+  const container =
+    document.getElementById(
+      "results"
+    );
 
-"product"
+  const count =
+    document.getElementById(
+      "resultCount"
+    );
 
-).value;
+  count.innerText =
+    `共找到 ${customers.length} 个潜在客户`;
 
+  if(!customers.length){
 
+    container.innerHTML =
+      `<div class="empty">
+        暂时没有找到符合条件的客户。
+        <br>
+        可以尝试更换产品关键词或目标国家。
+      </div>`;
 
-let country=
+    return;
 
-document.getElementById(
+  }
 
-"country"
+  container.innerHTML =
+    customers
+      .map(
+        (customer,index) => {
 
-).value;
+          const website =
+            customer.website || "";
 
+          const email =
+            customer.email || "";
 
+          const emailText =
+            customer.emailText || "";
 
+          return `
 
-let res = await fetch(
+            <div class="customer">
 
-API+"/find-leads",
+              <div class="customer-top">
 
-{
+                <div>
 
-method:"POST",
+                  <h3>
+                    ${escapeHtml(
+                      customer.company ||
+                      `潜在客户 ${index + 1}`
+                    )}
+                  </h3>
 
-headers:{
+                  <div class="meta">
 
-"Content-Type":"application/json"
+                    国家：
+                    ${escapeHtml(
+                      customer.country || ""
+                    )}
 
-},
+                    <br>
 
+                    类型：
+                    ${escapeHtml(
+                      customer.type ||
+                      "Potential Buyer"
+                    )}
 
-body:JSON.stringify({
+                    <br>
 
-token,
+                    来源：
+                    ${escapeHtml(
+                      customer.source ||
+                      "Tavily"
+                    )}
 
-product,
+                  </div>
 
-country
+                </div>
 
-})
+                <div class="score">
 
+                  ${Number(
+                    customer.score || 0
+                  )}分
 
-}
+                </div>
 
-);
+              </div>
 
 
+              <div class="website">
 
-let data = await res.json();
+                网站：
 
+                ${
+                  website
+                    ? `<a
+                        href="${escapeAttribute(website)}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        ${escapeHtml(website)}
+                      </a>`
+                    : "未找到"
+                }
 
+              </div>
 
-if(data.message){
 
+              <div class="email ${
+                email
+                  ? ""
+                  : "empty"
+              }">
 
-alert(data.message);
+                邮箱：
 
+                ${
+                  email
+                    ? escapeHtml(email)
+                    : "暂未找到公开邮箱"
+                }
 
-return;
+              </div>
 
-}
 
+              ${
+                customer.description
+                  ? `
+                    <div class="meta"
+                         style="margin-top:10px">
 
+                      ${escapeHtml(
+                        customer.description
+                      )}
 
+                    </div>
+                  `
+                  : ""
+              }
 
 
-csvData=data.excel;
+              ${
+                emailText
+                  ? `
+                    <div class="email-text">
 
+                      ${escapeHtml(
+                        emailText
+                      )}
 
+                    </div>
+                  `
+                  : ""
+              }
 
+            </div>
 
-document.getElementById(
+          `;
 
-"analysis"
-
-).innerText=
-
-JSON.stringify(
-
-data.analysis,
-
-null,
-
-2
-
-);
-
-
-
-
-
-let html="";
-
-
-
-data.customers.forEach(c=>{
-
-
-html +=
-
-`
-
-<div class="customer">
-
-
-<h3>
-
-${c.company}
-
-</h3>
-
-
-<p>
-
-国家：
-
-${c.country}
-
-</p>
-
-
-<p>
-
-类型：
-
-${c.type}
-
-</p>
-
-
-<p class="score">
-
-评分：
-
-${c.score}
-
-</p>
-
-
-<p>
-
-官网：
-
-${c.website}
-
-</p>
-
-
-<p>
-
-邮箱：
-
-${c.email}
-
-</p>
-
-
-<p>
-
-联系人：
-
-${c.contactPerson}
-
-</p>
-
-
-<p>
-
-状态：
-
-${c.status}
-
-</p>
-
-
-</div>
-
-
-`;
-
-
-
-});
-
-
-
-document.getElementById(
-
-"customers"
-
-).innerHTML=
-
-html;
-
-
-
-
-if(data.customers.length){
-
-
-document.getElementById(
-
-"emailText"
-
-).value=
-
-data.customers[0].emailTemplate;
-
+        }
+      )
+      .join("");
 
 }
 
 
+/* =========================
+   HTML安全处理
+========================= */
+
+function escapeHtml(value){
+
+  return String(value || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
+function escapeAttribute(value){
 
-
-
-
-
-// 导出CSV
-
-function downloadCSV(){
-
-
-
-if(!csvData){
-
-
-alert(
-
-"没有数据"
-
-);
-
-
-return;
+  return String(value || "")
+    .replace(/"/g,"%22")
+    .replace(/</g,"%3C")
+    .replace(/>/g,"%3E");
 
 }
-
-
-
-let blob = new Blob(
-
-[csvData],
-
-{
-
-type:
-
-"text/csv;charset=utf-8"
-
-}
-
-);
-
-
-
-let url=
-
-URL.createObjectURL(blob);
-
-
-
-let a=
-
-document.createElement("a");
-
-
-
-a.href=url;
-
-
-a.download=
-
-"海外客户名单.csv";
-
-
-a.click();
-
-
-
-}
-
-
 
 </script>
 
-
 </body>
-
 </html>
